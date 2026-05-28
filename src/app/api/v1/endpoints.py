@@ -27,6 +27,7 @@ async def launch_probe(
     probe: ProbeLaunch,
     session: SessionDep,
 ):
+    """Deverá lançar uma sonda na malha com as dimensões e direção especificadas, retornando os dados iniciais da sonda."""
 
     probe_service = ProbeService(session)
     try:
@@ -48,6 +49,7 @@ async def move_probe(
     move_probe: ProbeMove,
     session: SessionDep,
 ):
+    """Deverá mover a sonda de acordo com os comandos recebidos (M, L, R), retornando os dados atualizados da sonda."""
     probe_service = ProbeService(session)
     try:
         moved_probe = await probe_service.move_probe(move_probe)
@@ -63,6 +65,7 @@ async def move_probe(
 
 @router.get("/probes", response_model=ProbesPositionsResponse, tags=["probe"])
 async def see_probe_positions(session: SessionDep):
+    """Deverá retornar a lista com as posições de todas as sondas lançadas."""
     probe_service = ProbeService(session)
     positions_response = await probe_service.see_probe_positions()
     return positions_response
