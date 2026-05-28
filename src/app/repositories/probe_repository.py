@@ -20,7 +20,7 @@ class ProbeRepository:
 
     async def get_all(self):
         result = await self.session.exec(select(Probe))
-        return result.scalars().all()
+        return result.all()
 
     async def update(self, probe: Probe):
         await self.session.commit()

@@ -3,7 +3,12 @@
 from fastapi import APIRouter, HTTPException
 
 from app.api.deps import SessionDep
-from app.schemas.probe import ProbeLaunch, ProbeMove, ProbeResponse
+from app.schemas.probe import (
+    ProbeLaunch,
+    ProbeMove,
+    ProbeResponse,
+    ProbesPositionsResponse,
+)
 from app.services.probe_service import ProbeService
 
 router = APIRouter()
@@ -54,3 +59,10 @@ async def move_probe(
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+
+
+@router.get("/probes", response_model=ProbesPositionsResponse, tags=["probe"])
+async def see_probe_positions(session: SessionDep):
+    probe_service = ProbeService(session)
+    positions_response = await probe_service.see_probe_positions()
+    return positions_response

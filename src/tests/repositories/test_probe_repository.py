@@ -72,7 +72,7 @@ async def test_probe_repository_get_all():
     mock_result = MagicMock()
     mock_probe1 = Probe(x=0, y=0, direction="NORTH")
     mock_probe2 = Probe(x=1, y=1, direction="EAST")
-    mock_result.scalars().all.return_value = [mock_probe1, mock_probe2]
+    mock_result.all.return_value = [mock_probe1, mock_probe2]
     mock_session.exec.return_value = mock_result
     repository = ProbeRepository(session=mock_session)
 

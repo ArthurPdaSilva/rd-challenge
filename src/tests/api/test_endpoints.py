@@ -4,6 +4,7 @@ from httpx import ASGITransport, AsyncClient
 import pytest
 
 from app.main import app
+from app.schemas.probe import ProbesPositionsResponse
 
 
 @pytest.mark.anyio
@@ -160,3 +161,35 @@ async def test_move_probe_value_error():
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Comando inválido. Use apenas 'L', 'R' e 'M'."
+
+
+@pytest.mark.anyio
+async def test_see_probe_positions_success():
+    """Deverá retornar a lista com as posições de todas as sondas lançadas."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+
+        # Moca o retorno do serviço (ProbesPositionsResponse, que contém a lista .probes)
+        mock_positions_response = ProbesPositionsResponse(
+            probes=[
+                {"id": 1, "x": 1, "y": 2, "direction": "NORTH"},
+                {"id": 2, "x": 3, "y": 4, "direction": "SOUTH"},
+            ]
+        )
+
+        instance.see_probe_positions = AsyncMock(return_value=mock_positions_response)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            response = await ac.get("/api/v1/probes")
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data == {
+        "probes": [
+            {"id": 1, "x": 1, "y": 2, "direction": "NORTH"},
+            {"id": 2, "x": 3, "y": 4, "direction": "SOUTH"},
+        ]
+    }
