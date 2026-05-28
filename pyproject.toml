@@ -1,0 +1,54 @@
+[project]
+name = "rd-desafio"
+version = "0.1.0"
+description = "API para controle de sondas em uma malha 2D, desenvolvida com FastAPI."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.136.3",
+    "uvicorn>=0.48.0",
+]
+
+[dependency-groups]
+dev = [
+    "anyio>=4.13.0",
+    "httpx>=0.28.1",
+    "pytest>=9.0.3",
+    "ruff>=0.15.14",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["venv", ".venv"]
+
+# quais regras habilitar
+select = ["E", "F", "I", "B"]  # E/F = errors, I = imports, B = bugbear
+ignore = [
+    "E501", # ignorar limite de linha muito longa (se quiser)
+]
+
+# ----------------------------------------------------------
+# Ruff formatter (substitui Black se preferir)
+# ----------------------------------------------------------
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# ----------------------------------------------------------
+# isort via Ruff (não precisa instalar isort separado)
+# ----------------------------------------------------------
+[tool.ruff.lint.isort]
+known-first-party = ["finance_ai"]
+force-sort-within-sections = true
+
+# ----------------------------------------------------------
+# Black (opcional — se for usar Black em vez do Ruff)
+# ----------------------------------------------------------
+[tool.black]
+line-length = 88
+target-version = ["py313"]
