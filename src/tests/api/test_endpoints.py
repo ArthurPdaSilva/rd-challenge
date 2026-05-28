@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from httpx import ASGITransport, AsyncClient
 import pytest
 
@@ -18,13 +20,30 @@ async def test_health_check():
 @pytest.mark.anyio
 async def test_launch_probe_success():
     """Uma sonda sempre começará no canto inferior esquerdo da malha, representado pelas coordenadas (0,0)."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.post(
-            "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "NORTH"}
-        )
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+
+        mock_launched = MagicMock()
+        mock_launched.id = 1
+        mock_launched.x = 5
+        mock_launched.y = 5
+        mock_launched.direction = "NORTH"
+        instance.launch_probe = AsyncMock(return_value=mock_launched)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            response = await ac.post(
+                "/api/v1/launch-probe", json={"x": 5, "y": 5, "direction": "NORTH"}
+            )
+
     assert response.status_code == 201
+
+    data = response.json()
+    assert data["id"] == 1
+    assert data["x"] == 5
+    assert data["y"] == 5
+    assert data["direction"] == "NORTH"
 
 
 @pytest.mark.anyio
@@ -60,3 +79,84 @@ async def test_launch_probe_empty_payload():
     ) as ac:
         response = await ac.post("/api/v1/launch-probe", json={})
     assert response.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_launch_probe_value_error():
+    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelo ValueError."""
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        response = await ac.post(
+            "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "NORTH"}
+        )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "O tamanho da malha deve ser maior que zero."
+
+
+@pytest.mark.anyio
+async def test_move_probe_success():
+    """Deverá mover a sonda com sucesso validando as novas coordenadas e direção."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+
+        mock_moved = MagicMock()
+        mock_moved.id = 1
+        mock_moved.x = 1
+        mock_moved.y = 0
+        mock_moved.direction = "EAST"
+        instance.move_probe = AsyncMock(return_value=mock_moved)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            move_resp = await ac.post(
+                "/api/v1/move-probe", json={"id": 1, "command": "RM"}
+            )
+
+        assert move_resp.status_code == 200
+
+        data = move_resp.json()
+        assert data["id"] == 1
+        assert data["x"] == 1
+        assert data["y"] == 0
+        assert data["direction"] == "EAST"
+
+
+@pytest.mark.anyio
+async def test_move_probe_not_found():
+    """Deverá retornar erro 400 se a sonda não existir."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+        # Forçamos o serviço a lançar o ValueError que nossa API transformará em 400
+        instance.move_probe = AsyncMock(side_effect=ValueError("Sonda não encontrada."))
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            response = await ac.post(
+                "/api/v1/move-probe", json={"id": 9999, "command": "M"}
+            )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Sonda não encontrada."
+
+
+@pytest.mark.anyio
+async def test_move_probe_value_error():
+    """Deverá retornar erro 400 se o comando for inválido."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+        instance.move_probe = AsyncMock(
+            side_effect=ValueError("Comando inválido. Use apenas 'L', 'R' e 'M'.")
+        )
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            response = await ac.post(
+                "/api/v1/move-probe", json={"id": 1, "command": "XYZ"}
+            )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Comando inválido. Use apenas 'L', 'R' e 'M'."

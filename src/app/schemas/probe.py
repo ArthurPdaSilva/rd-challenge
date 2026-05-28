@@ -23,5 +23,12 @@ class ProbeLaunch(ProbeBase):
     pass
 
 
-class ProbeLaunchResponse(ProbeBase):
+class ProbeResponse(ProbeBase):
     id: int = Field(..., description="ID da sonda lançada")
+
+
+class ProbeMove(SQLModel):
+    id: int = Field(..., description="ID da sonda a ser movida")
+    command: str = Field(
+        ..., description="Sequência de comandos para movimentar a sonda Exp: (MRM)"
+    )
