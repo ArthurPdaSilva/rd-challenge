@@ -2,13 +2,15 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.grid import Grid
 from app.models.probe import Probe
+from app.repositories.grid_repository import GridRepository
 from app.repositories.probe_repository import ProbeRepository
-from app.schemas.probe import ProbeLaunch, ProbeMove, ProbeResponse
+from app.schemas.probe import DirectionEnum, ProbeLaunch, ProbeMove, ProbeResponse
 
 
 class ProbeService:
     def __init__(self, session: AsyncSession):
         self.repository = ProbeRepository(session)
+        self.grid_repository = GridRepository(session)
         self.valid_directions = {"NORTH", "EAST", "SOUTH", "WEST"}
 
     async def launch_probe(self, probe: ProbeLaunch) -> ProbeResponse:
@@ -38,30 +40,36 @@ class ProbeService:
         if not all(c in "LRM" for c in cmd):
             raise ValueError("Comando inválido. Use apenas 'L', 'R' e 'M'.")
 
+        grid = await self.grid_repository.get_by_probe_id(moveProbe.id)
+
+        if not grid:
+            raise ValueError("Malha associada à sonda não encontrada.")
+
+        handlers = {
+            "L": lambda: self._turn_left(probe),
+            "R": lambda: self._turn_right(probe),
+            "M": lambda: self._move_forward(probe, grid),
+        }
+
         for c in cmd:
-            if c == "L":
-                probe.direction = self._turn_left(probe.direction)
-            elif c == "R":
-                probe.direction = self._turn_right(probe.direction)
-            elif c == "M":
-                self._move_forward(probe)
+            handlers[c]()
 
         updated_probe = await self.repository.update(probe)
         return updated_probe
 
-    def _turn_left(self, direction: str) -> str:
+    def _turn_left(self, probe: Probe) -> None:
         directions = ["NORTH", "WEST", "SOUTH", "EAST"]
-        return self.get_next_direction(direction, directions)
+        probe.direction = self.get_next_direction(probe.direction, directions)
 
-    def _turn_right(self, direction: str) -> str:
+    def _turn_right(self, probe: Probe) -> None:
         directions = ["NORTH", "EAST", "SOUTH", "WEST"]
-        return self.get_next_direction(direction, directions)
+        probe.direction = self.get_next_direction(probe.direction, directions)
 
-    def get_next_direction(self, direction, directions):
+    def get_next_direction(self, direction: DirectionEnum, directions: list) -> str:
         current_index = directions.index(direction)
         return directions[(current_index + 1) % 4]
 
-    def _move_forward(self, probe: Probe):
+    def _move_forward(self, probe: Probe, grid: Grid):
         MOVES = {
             "NORTH": (0, 1),
             "EAST": (1, 0),
@@ -74,11 +82,11 @@ class ProbeService:
 
         if (
             new_x < 0
-            or new_x > probe.grid.dimension_x
+            or new_x > grid.dimension_x
             or new_y < 0
-            or new_y > probe.grid.dimension_y
+            or new_y > grid.dimension_y
         ):
             raise ValueError("Movimento inválido. A sonda não pode sair da malha.")
 
-        probe.x += new_x
-        probe.y += new_y
+        probe.x = new_x
+        probe.y = new_y

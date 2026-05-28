@@ -8,6 +8,8 @@ from app.core.database import get_session, init_db
 
 @pytest.mark.asyncio
 async def test_init_db():
+    """Deverá criar as tabelas do banco de dados usando SQLModel.metadata.create_all."""
+
     # Arrange
     with patch("app.core.database.async_engine") as mock_engine:
         mock_conn = AsyncMock()
@@ -23,6 +25,8 @@ async def test_init_db():
 
 @pytest.mark.asyncio
 async def test_get_session():
+    """Deverá criar uma sessão de banco de dados usando sessionmaker e retorná-la."""
+
     # Arrange
     with patch("app.core.database.sessionmaker") as mock_sessionmaker:
         mock_session_instance = AsyncMock()

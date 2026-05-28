@@ -11,6 +11,8 @@ from app.services.probe_service import ProbeService
 
 @pytest.mark.asyncio
 async def test_launch_probe():
+    """Deverá lançar uma sonda com sucesso e retornar seus dados iniciais."""
+
     # Arrange
     mock_session = AsyncMock()
     launch_request = ProbeLaunch(x=5, y=5, direction="NORTH")
@@ -44,6 +46,8 @@ async def test_launch_probe():
 
 @pytest.mark.asyncio
 async def test_launch_probe_invalid_grid():
+    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelo ValueError."""
+
     # Arrange
     mock_session = AsyncMock()
     launch_request = ProbeLaunch(x=-1, y=5, direction="NORTH")
@@ -58,12 +62,17 @@ async def test_launch_probe_invalid_grid():
 
 @pytest.mark.asyncio
 async def test_launch_probe_invalid_direction():
+    """Deverá retornar erro de validação (ValidationError) se a direção for inválida."""
+    # Arrange (N/A)
+
+    # Act & Assert
     with pytest.raises(ValidationError):
         ProbeLaunch(x=5, y=5, direction="INVALIDA")
 
 
 @pytest.mark.asyncio
 async def test_move_probe_not_found():
+    """Deverá levantar ValueError se a sonda não for encontrada no banco de dados."""
     # Arrange
     mock_session = AsyncMock()
     move_req = ProbeMove(id=99, command="M")
@@ -82,6 +91,7 @@ async def test_move_probe_not_found():
 
 @pytest.mark.asyncio
 async def test_move_probe_invalid_command():
+    """Deverá levantar ValueError se o comando de movimento contiver caracteres inválidos."""
     # Arrange
     mock_session = AsyncMock()
     move_req = ProbeMove(id=1, command="XYZ")
@@ -99,19 +109,52 @@ async def test_move_probe_invalid_command():
 
 
 @pytest.mark.asyncio
+async def test_move_probe_grid_not_found():
+    """Deverá levantar ValueError se a malha associada à sonda não for encontrada."""
+    # Arrange
+    mock_session = AsyncMock()
+    move_req = ProbeMove(id=1, command="M")
+
+    with (
+        patch("app.services.probe_service.ProbeRepository") as MockRepo,
+        patch("app.services.probe_service.GridRepository") as MockGridRepo,
+    ):
+        mock_repo_instance = MockRepo.return_value
+        mock_repo_instance.get_by_id = AsyncMock(return_value=MagicMock())
+
+        mock_grid_repo = MockGridRepo.return_value
+        mock_grid_repo.get_by_probe_id = AsyncMock(return_value=None)
+
+        service = ProbeService(session=mock_session)
+
+        # Act & Assert
+        with pytest.raises(ValueError) as exc_info:
+            await service.move_probe(move_req)
+        assert str(exc_info.value) == "Malha associada à sonda não encontrada."
+
+
+@pytest.mark.asyncio
 async def test_move_probe_success():
+    """Deverá mover a sonda com sucesso ao longo da malha utilizando comandos válidos."""
     # Arrange
     mock_session = AsyncMock()
     move_req = ProbeMove(id=1, command="RML")
 
-    with patch("app.services.probe_service.ProbeRepository") as MockRepo:
+    with (
+        patch("app.services.probe_service.ProbeRepository") as MockRepo,
+        patch("app.services.probe_service.GridRepository") as MockGridRepo,
+    ):
         mock_repo_instance = MockRepo.return_value
+        mock_grid_repo_instance = MockGridRepo.return_value
 
         mock_probe = Probe(
             x=0, y=0, direction="NORTH", grid=Grid(dimension_x=5, dimension_y=5)
         )
         mock_repo_instance.get_by_id = AsyncMock(return_value=mock_probe)
         mock_repo_instance.update = AsyncMock(return_value=mock_probe)
+        mock_grid_repo_instance.get_by_probe_id = AsyncMock(
+            return_value=mock_probe.grid
+        )
 
         service = ProbeService(session=mock_session)
 
@@ -126,19 +169,62 @@ async def test_move_probe_success():
 
 
 @pytest.mark.asyncio
+async def test_move_probe_mrm_success():
+    """Deverá mover a sonda da posição (0,0) utilizando 'MRM' e parar em (1,1) virada para EAST."""
+    # Arrange
+    mock_session = AsyncMock()
+    move_req = ProbeMove(id=1, command="MRM")
+
+    with (
+        patch("app.services.probe_service.ProbeRepository") as MockRepo,
+        patch("app.services.probe_service.GridRepository") as MockGridRepo,
+    ):
+        mock_repo_instance = MockRepo.return_value
+        mock_grid_repo_instance = MockGridRepo.return_value
+
+        mock_probe = Probe(
+            x=0, y=0, direction="NORTH", grid=Grid(dimension_x=5, dimension_y=5)
+        )
+        mock_repo_instance.get_by_id = AsyncMock(return_value=mock_probe)
+        mock_repo_instance.update = AsyncMock(return_value=mock_probe)
+        mock_grid_repo_instance.get_by_probe_id = AsyncMock(
+            return_value=mock_probe.grid
+        )
+
+        service = ProbeService(session=mock_session)
+
+        # Act
+        updated_probe = await service.move_probe(move_req)
+
+        # Assert
+        assert updated_probe.x == 1
+        assert updated_probe.y == 1
+        assert updated_probe.direction == "EAST"
+        mock_repo_instance.update.assert_awaited_once_with(mock_probe)
+
+
+@pytest.mark.asyncio
 async def test_move_probe_out_of_bounds():
+    """Deverá levantar ValueError se a sonda tentar se mover para fora dos limites da malha."""
     # Arrange
     mock_session = AsyncMock()
     move_req = ProbeMove(id=1, command="M")
 
-    with patch("app.services.probe_service.ProbeRepository") as MockRepo:
+    with (
+        patch("app.services.probe_service.ProbeRepository") as MockRepo,
+        patch("app.services.probe_service.GridRepository") as MockGridRepo,
+    ):
         mock_repo_instance = MockRepo.return_value
+        mock_grid_repo_instance = MockGridRepo.return_value
 
         # Sonda na borda superior (5,5) virada para o NORTH e tentando avançar
         mock_probe = Probe(
             x=5, y=5, direction="NORTH", grid=Grid(dimension_x=5, dimension_y=5)
         )
         mock_repo_instance.get_by_id = AsyncMock(return_value=mock_probe)
+        mock_grid_repo_instance.get_by_probe_id = AsyncMock(
+            return_value=mock_probe.grid
+        )
 
         service = ProbeService(session=mock_session)
 
