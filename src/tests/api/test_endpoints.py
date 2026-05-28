@@ -6,6 +6,7 @@ from app.main import app
 
 @pytest.mark.anyio
 async def test_health_check():
+    """Deve retornar um status de saúde saudável."""
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:

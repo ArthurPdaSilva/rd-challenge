@@ -5,7 +5,11 @@ description = "API para controle de sondas em uma malha 2D, desenvolvida com Fas
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "asyncpg>=0.31.0",
     "fastapi>=0.136.3",
+    "psycopg2-binary>=2.9.12",
+    "python-dotenv>=1.2.2",
+    "sqlmodel>=0.0.38",
     "uvicorn>=0.48.0",
 ]
 
