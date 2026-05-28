@@ -7,6 +7,7 @@
 - **Python:** Linguagem da API. Versão >= 3.14
 - **uv:** Gerenciador de pacotes uv (utilizado para este projeto).
 - **PostgreSQL:** Banco de dados utilizado para persistência.
+- **Docker e Docker Compose:** Caso prefira rodar a aplicação contêinerizada.
 
 ## Dependências principais
 
@@ -38,10 +39,15 @@
   - Na raiz do projeto, entre em `src/` e execute `python run_server.py` para iniciar a aplicação.
   - A API ficará disponível em <http://127.0.0.1:8000>.
   - *Dica:* A aplicação tentará criar as tabelas no banco de dados automaticamente na inicialização (lifespan).
+**Rodar em desenvolvimento (usando Docker):**
+  - Certifique-se que o Docker e o Docker Compose estejam executando.
+  - Na raiz do projeto, rode: `docker compose up --build`
+  - A API (e o banco em Postgres, automaticamente conectado) já subirá e ficará disponível em <http://localhost:8000>
 - **Rodar Testes:**
   - A suíte de testes usa `pytest` e está configurada para reconhecer a estrutura `src/`
   - Execute `pytest` na raiz do projeto para rodar todos os testes.
   - Para ver a cobertura de testes, use `pytest --cov=src --cov-report=html` em html
+  - Pelo Docker: No Windows usando CMD, com tudo ligado, rode `docker compose run --rm -v "%cd%/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html` .
 
 ## Recomendações rápidas
 
