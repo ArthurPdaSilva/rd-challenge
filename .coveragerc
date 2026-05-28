@@ -1,0 +1,5 @@
+[run]
+omit =
+    src/run_server.py
+    */run_server.py
+    */tests/*
