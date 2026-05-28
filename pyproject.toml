@@ -18,6 +18,8 @@ dev = [
     "anyio>=4.13.0",
     "httpx>=0.28.1",
     "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.15.14",
 ]
 
@@ -27,7 +29,7 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-exclude = ["venv", ".venv"]
+exclude = ["venv", ".venv", ".coveragerc"]
 
 # quais regras habilitar
 select = ["E", "F", "I", "B"]  # E/F = errors, I = imports, B = bugbear
@@ -35,24 +37,16 @@ ignore = [
     "E501", # ignorar limite de linha muito longa (se quiser)
 ]
 
-# ----------------------------------------------------------
-# Ruff formatter (substitui Black se preferir)
-# ----------------------------------------------------------
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
-# ----------------------------------------------------------
-# isort via Ruff (não precisa instalar isort separado)
-# ----------------------------------------------------------
 [tool.ruff.lint.isort]
 known-first-party = ["finance_ai"]
 force-sort-within-sections = true
 
-# ----------------------------------------------------------
-# Black (opcional — se for usar Black em vez do Ruff)
-# ----------------------------------------------------------
 [tool.black]
 line-length = 88
 target-version = ["py313"]

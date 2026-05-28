@@ -3,7 +3,8 @@
 from fastapi import APIRouter
 
 from app.api.deps import SessionDep
-from app.schemas.probe import ProbeCreate
+from app.schemas.probe import ProbeLaunch, ProbeLaunchResponse
+from app.services.probe_service import ProbeService
 
 router = APIRouter()
 
@@ -14,17 +15,20 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@router.post("/launch-probe", status_code=201, tags=["probe"])
+@router.post(
+    "/launch-probe", response_model=ProbeLaunchResponse, status_code=201, tags=["probe"]
+)
 async def launch_probe(
-    probe: ProbeCreate,
+    probe: ProbeLaunch,
     session: SessionDep,
 ):
-    """Lançar uma sonda e definir a grid de operação."""
-    print(session)
+
+    probe_service = ProbeService(session)
+    launched_probe = await probe_service.launch_probe(probe)
 
     return {
-        "id": "abc123",
-        "x": 0,
-        "y": 0,
-        "direction": probe.direction.upper(),
+        "id": launched_probe.id,
+        "x": launched_probe.x,
+        "y": launched_probe.y,
+        "direction": launched_probe.direction,
     }

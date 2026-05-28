@@ -7,14 +7,15 @@ from app.core.config import settings
 
 database_url = settings.DATABASE_URL()
 
-async_engine = create_async_engine(url=database_url, echo=True)
+async_engine = create_async_engine(url=database_url, echo=False)
 
 
 async def init_db():
     """Inicializa o banco de dados criando as tabelas definidas nos modelos."""
     async with async_engine.begin() as conn:
-        """É necessário importar os modelos antes de criar as tabelas para garantir que eles sejam registrados no SQLModel.metadata."""
-        from app.models.probe import Probe  # noqa: F401
+        # É necessário importar os modelos antes de criar as tabelas para garantir que eles sejam registrados no SQLModel.metadata.
+        import app.models.grid  # noqa: F401
+        import app.models.probe  # noqa: F401
 
         await conn.run_sync(SQLModel.metadata.create_all)
 

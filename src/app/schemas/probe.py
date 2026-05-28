@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlmodel import SQLModel
 
 
@@ -19,5 +19,9 @@ class ProbeBase(SQLModel):
     )
 
 
-class ProbeCreate(ProbeBase):
+class ProbeLaunch(ProbeBase):
     pass
+
+
+class ProbeLaunchResponse(ProbeBase):
+    id: int = Field(..., description="ID da sonda lançada")

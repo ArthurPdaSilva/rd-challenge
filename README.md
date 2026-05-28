@@ -19,24 +19,29 @@
 - **httpx:** cliente HTTP assíncrono para testes de integração. Versão: >= 0.28.1
 - **anyio:** biblioteca de suporte para operações assíncronas. Versão: >= 4.13.0
 - **ruff:** ferramenta de linter para manter a qualidade do código. Versão: >= 0.15.14
+- **pytest-cov:** plugin para medir a cobertura dos testes. Versão: >= 7.1.0
+- **pytest-asyncio:** plugin para rodar testes assíncronos com pytest. Versão: >= 1.4.0
 
 ## API
 
 - **Localização:** [src/app/main.py](src/app/main.py)
 - **Instalar dependências:**
-  - Crie e ative um virtual env na raiz do projeto: uv venv (Windows: .venv\Scripts\activate)
-  - Atualize e instale os pacotes a partir do pyproject.toml:
-    uv sync
+  - Crie o virtual env: `uv venv`
+  - Ative o virtual env:
+    - Windows: `uv venv activate`
+  - Atualize e instale os pacotes a partir do `pyproject.toml`:
+    `uv sync`
 - **Configurar Variáveis de Ambiente:**
   - Duplique o arquivo .env.example chamando-o de .env.
-  - Certifique-se de configurar todas as variáveis de ambiente necessárias, especialmente as relacionadas ao banco de dados PostgreSQL (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_SERVER, POSTGRES_DB).
+  - Certifique-se de configurar todas as variáveis de ambiente necessárias, especialmente as relacionadas ao banco de dados PostgreSQL (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_SERVER`, `POSTGRES_DB`).
 - **Rodar em desenvolvimento:**
-  - Na raiz do projeto, execute python run_server.py para iniciar a aplicação.
+  - Na raiz do projeto, entre em `src/` e execute `python run_server.py` para iniciar a aplicação.
   - A API ficará disponível em <http://127.0.0.1:8000>.
   - *Dica:* A aplicação tentará criar as tabelas no banco de dados automaticamente na inicialização (lifespan).
 - **Rodar Testes:**
-  - A suíte de testes usa pytest e está configurada para reconhecer a estrutura src/. Para testar rode o comando:
-    pytest
+  - A suíte de testes usa `pytest` e está configurada para reconhecer a estrutura `src/`
+  - Execute `pytest` na raiz do projeto para rodar todos os testes.
+  - Para ver a cobertura de testes, use `pytest --cov=src --cov-report=html` em html
 
 ## Recomendações rápidas
 
