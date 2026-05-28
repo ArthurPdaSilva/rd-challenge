@@ -4,7 +4,13 @@ from app.models.grid import Grid
 from app.models.probe import Probe
 from app.repositories.grid_repository import GridRepository
 from app.repositories.probe_repository import ProbeRepository
-from app.schemas.probe import DirectionEnum, ProbeLaunch, ProbeMove, ProbeResponse
+from app.schemas.probe import (
+    DirectionEnum,
+    ProbeLaunch,
+    ProbeMove,
+    ProbeResponse,
+    ProbesPositionsResponse,
+)
 
 
 class ProbeService:
@@ -28,6 +34,15 @@ class ProbeService:
             x=grid_dimension.dimension_x,
             y=grid_dimension.dimension_y,
             direction=launched_probe.direction,
+        )
+
+    async def see_probe_positions(self) -> ProbesPositionsResponse:
+        probes = await self.repository.get_all()
+        return ProbesPositionsResponse(
+            probes=[
+                ProbeResponse(id=p.id, x=p.x, y=p.y, direction=p.direction)
+                for p in probes
+            ]
         )
 
     async def move_probe(self, moveProbe: ProbeMove) -> Probe:

@@ -32,3 +32,9 @@ class ProbeMove(SQLModel):
     command: str = Field(
         ..., description="Sequência de comandos para movimentar a sonda Exp: (MRM)"
     )
+
+
+class ProbesPositionsResponse(SQLModel):
+    probes: list[ProbeResponse] = Field(
+        ..., description="Lista de sondas e suas posições atuais"
+    )

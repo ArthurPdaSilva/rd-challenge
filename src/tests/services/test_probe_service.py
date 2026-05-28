@@ -5,7 +5,7 @@ import pytest
 
 from app.models.grid import Grid
 from app.models.probe import Probe
-from app.schemas.probe import ProbeLaunch, ProbeMove
+from app.schemas.probe import ProbeLaunch, ProbeMove, ProbeResponse
 from app.services.probe_service import ProbeService
 
 
@@ -201,6 +201,35 @@ async def test_move_probe_mrm_success():
         assert updated_probe.y == 1
         assert updated_probe.direction == "EAST"
         mock_repo_instance.update.assert_awaited_once_with(mock_probe)
+
+
+@pytest.mark.asyncio
+async def test_see_probe_positions():
+    """Deverá retornar as posições de todas as sondas lançadas."""
+    # Arrange
+    mock_session = AsyncMock()
+
+    with patch("app.services.probe_service.ProbeRepository") as MockRepo:
+        mock_repo_instance = MockRepo.return_value
+
+        mock_probes = [
+            MagicMock(id=1, x=1, y=2, direction="NORTH"),
+            MagicMock(id=2, x=3, y=4, direction="SOUTH"),
+        ]
+
+        mock_repo_instance.get_all = AsyncMock(return_value=mock_probes)
+
+        service = ProbeService(session=mock_session)
+
+        # Act
+        response = await service.see_probe_positions()
+
+        # Assert
+        mock_repo_instance.get_all.assert_awaited_once()
+        assert response.probes == [
+            ProbeResponse(id=1, x=1, y=2, direction="NORTH"),
+            ProbeResponse(id=2, x=3, y=4, direction="SOUTH"),
+        ]
 
 
 @pytest.mark.asyncio
