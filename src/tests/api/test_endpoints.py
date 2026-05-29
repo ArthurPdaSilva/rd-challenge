@@ -1,25 +1,20 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from httpx import ASGITransport, AsyncClient
 import pytest
 
-from app.main import app
 from app.schemas.probe import ProbesPositionsResponse
 
 
 @pytest.mark.anyio
-async def test_health_check():
+async def test_health_check(async_client):
     """Deve retornar um status de saúde saudável."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.get("/api/v1/health-check")
+    response = await async_client.get("/api/v1/health-check")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 
 
 @pytest.mark.anyio
-async def test_launch_probe_success():
+async def test_launch_probe_success(async_client):
     """Uma sonda sempre começará no canto inferior esquerdo da malha, representado pelas coordenadas (0,0)."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
@@ -30,11 +25,7 @@ async def test_launch_probe_success():
         mock_launched.y = 5
         mock_launched.direction = "NORTH"
         instance.launch_probe = AsyncMock(return_value=mock_launched)
-
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as ac:
-            response = await ac.post(
+        response = await async_client.post(
                 "/api/v1/launch-probe", json={"x": 5, "y": 5, "direction": "NORTH"}
             )
 
@@ -48,55 +39,43 @@ async def test_launch_probe_success():
 
 
 @pytest.mark.anyio
-async def test_launch_probe_invalid_direction():
+async def test_launch_probe_invalid_direction(async_client):
     """Deve lançar um erro se ele tentar passar uma direção inválida."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.post(
-            "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "UP"}
-        )
+    response = await async_client.post(
+        "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "UP"}
+    )
     assert response.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_launch_probe_invalid_coordinates_type():
+async def test_launch_probe_invalid_coordinates_type(async_client):
     """Deverá lançar um erro se ele tentar passar strings nas coordenadas x ou y."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.post(
-            "/api/v1/launch-probe",
-            json={"x": "invalid_x", "y": "invalid_y", "direction": "NORTH"},
-        )
+    response = await async_client.post(
+        "/api/v1/launch-probe",
+        json={"x": "invalid_x", "y": "invalid_y", "direction": "NORTH"},
+    )
     assert response.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_launch_probe_empty_payload():
+async def test_launch_probe_empty_payload(async_client):
     """Deverá lançar um erro se ele não passar nada no corpo da requisição."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.post("/api/v1/launch-probe", json={})
+    response = await async_client.post("/api/v1/launch-probe", json={})
     assert response.status_code == 422
 
 
 @pytest.mark.anyio
-async def test_launch_probe_value_error():
+async def test_launch_probe_value_error(async_client):
     """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelo ValueError."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        response = await ac.post(
-            "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "NORTH"}
-        )
+    response = await async_client.post(
+        "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "NORTH"}
+    )
     assert response.status_code == 400
     assert response.json()["detail"] == "O tamanho da malha deve ser maior que zero."
 
 
 @pytest.mark.anyio
-async def test_move_probe_success():
+async def test_move_probe_success(async_client):
     """Deverá mover a sonda com sucesso validando as novas coordenadas e direção."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
@@ -107,11 +86,7 @@ async def test_move_probe_success():
         mock_moved.y = 0
         mock_moved.direction = "EAST"
         instance.move_probe = AsyncMock(return_value=mock_moved)
-
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as ac:
-            move_resp = await ac.post(
+        move_resp = await async_client.post(
                 "/api/v1/move-probe", json={"id": 1, "command": "RM"}
             )
 
@@ -125,17 +100,13 @@ async def test_move_probe_success():
 
 
 @pytest.mark.anyio
-async def test_move_probe_not_found():
+async def test_move_probe_not_found(async_client):
     """Deverá retornar erro 400 se a sonda não existir."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
         # Forçamos o serviço a lançar o ValueError que nossa API transformará em 400
         instance.move_probe = AsyncMock(side_effect=ValueError("Sonda não encontrada."))
-
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as ac:
-            response = await ac.post(
+        response = await async_client.post(
                 "/api/v1/move-probe", json={"id": 9999, "command": "M"}
             )
 
@@ -144,18 +115,14 @@ async def test_move_probe_not_found():
 
 
 @pytest.mark.anyio
-async def test_move_probe_value_error():
+async def test_move_probe_value_error(async_client):
     """Deverá retornar erro 400 se o comando for inválido."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
         instance.move_probe = AsyncMock(
             side_effect=ValueError("Comando inválido. Use apenas 'L', 'R' e 'M'.")
         )
-
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as ac:
-            response = await ac.post(
+        response = await async_client.post(
                 "/api/v1/move-probe", json={"id": 1, "command": "XYZ"}
             )
 
@@ -164,7 +131,7 @@ async def test_move_probe_value_error():
 
 
 @pytest.mark.anyio
-async def test_see_probe_positions_success():
+async def test_see_probe_positions_success(async_client):
     """Deverá retornar a lista com as posições de todas as sondas lançadas."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
@@ -178,11 +145,7 @@ async def test_see_probe_positions_success():
         )
 
         instance.see_probe_positions = AsyncMock(return_value=mock_positions_response)
-
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as ac:
-            response = await ac.get("/api/v1/probes")
+        response = await async_client.get("/api/v1/probes")
 
     assert response.status_code == 200
 

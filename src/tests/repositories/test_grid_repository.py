@@ -1,21 +1,18 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import pytest
 
-from app.models.grid import Grid
 from app.repositories.grid_repository import GridRepository
 
 
 @pytest.mark.asyncio
-async def test_grid_repository_get_by_probe_id():
+async def test_grid_repository_get_by_probe_id(mock_session, mock_grid):
     """
     Deverá retornar a malha associada à sonda com id 1.
     """
-
     # Arrange
-    mock_session = AsyncMock()
     mock_result = MagicMock()
-    mock_grid = Grid(dimension_x=5, dimension_y=5, probe_id=1)
+    mock_grid.probe_id = 1
     mock_result.first.return_value = mock_grid
     mock_session.exec.return_value = mock_result
 

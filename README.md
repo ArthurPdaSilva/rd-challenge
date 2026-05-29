@@ -19,7 +19,10 @@
 - O Docker irá construir as imagens necessárias e iniciar os contêineres para a API e o banco de dados PostgreSQL.
 - A API estará disponível em <http://localhost:8000> e o banco de dados PostgreSQL estará acessível para a aplicação.
 - Para acessar a documentação interativa da API, vá para <http://localhost:8000/docs>.
-- Para rodar os testes dentro do contêiner, use:
+- Para rodar os testes, use o comando:
+  - Windows: `docker compose run --rm api pytest`
+  - Linux/Mac: `docker compose run --rm api pytest`
+- Para rodar os testes e também gerar o relatório de cobertura, use o comando:
   - Windows: `docker compose run --rm -v "%cd%/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
   - Linux/Mac: `docker compose run --rm -v "$(pwd)/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
 
