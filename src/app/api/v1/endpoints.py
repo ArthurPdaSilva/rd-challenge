@@ -3,6 +3,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.api.deps import SessionDep
+from app.core.exceptions import BusinessException
 from app.schemas.probe import (
     ProbeLaunch,
     ProbeMove,
@@ -38,8 +39,8 @@ async def launch_probe(
             "y": launched_probe.y,
             "direction": launched_probe.direction,
         }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    except BusinessException as e:
+        raise HTTPException(status_code=400, detail=e.message) from e
 
 
 @router.post(
@@ -59,8 +60,8 @@ async def move_probe(
             "y": moved_probe.y,
             "direction": moved_probe.direction,
         }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    except BusinessException as e:
+        raise HTTPException(status_code=400, detail=e.message) from e
 
 
 @router.get("/probes", response_model=ProbesPositionsResponse, tags=["probe"])

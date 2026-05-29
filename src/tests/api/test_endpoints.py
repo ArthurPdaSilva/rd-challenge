@@ -2,6 +2,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from app.core.exceptions import (
+    InvalidCommandException,
+    ProbeNotFoundException,
+)
 from app.schemas.probe import ProbesPositionsResponse
 
 
@@ -26,8 +30,8 @@ async def test_launch_probe_success(async_client):
         mock_launched.direction = "NORTH"
         instance.launch_probe = AsyncMock(return_value=mock_launched)
         response = await async_client.post(
-                "/api/v1/launch-probe", json={"x": 5, "y": 5, "direction": "NORTH"}
-            )
+            "/api/v1/launch-probe", json={"x": 5, "y": 5, "direction": "NORTH"}
+        )
 
     assert response.status_code == 201
 
@@ -66,7 +70,7 @@ async def test_launch_probe_empty_payload(async_client):
 
 @pytest.mark.anyio
 async def test_launch_probe_value_error(async_client):
-    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelo ValueError."""
+    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelas exceções de negócio."""
     response = await async_client.post(
         "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "NORTH"}
     )
@@ -87,8 +91,8 @@ async def test_move_probe_success(async_client):
         mock_moved.direction = "EAST"
         instance.move_probe = AsyncMock(return_value=mock_moved)
         move_resp = await async_client.post(
-                "/api/v1/move-probe", json={"id": 1, "command": "RM"}
-            )
+            "/api/v1/move-probe", json={"id": 1, "command": "RM"}
+        )
 
         assert move_resp.status_code == 200
 
@@ -104,11 +108,10 @@ async def test_move_probe_not_found(async_client):
     """Deverá retornar erro 400 se a sonda não existir."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
-        # Forçamos o serviço a lançar o ValueError que nossa API transformará em 400
-        instance.move_probe = AsyncMock(side_effect=ValueError("Sonda não encontrada."))
+        instance.move_probe = AsyncMock(side_effect=ProbeNotFoundException())
         response = await async_client.post(
-                "/api/v1/move-probe", json={"id": 9999, "command": "M"}
-            )
+            "/api/v1/move-probe", json={"id": 9999, "command": "M"}
+        )
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Sonda não encontrada."
@@ -119,12 +122,10 @@ async def test_move_probe_value_error(async_client):
     """Deverá retornar erro 400 se o comando for inválido."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
-        instance.move_probe = AsyncMock(
-            side_effect=ValueError("Comando inválido. Use apenas 'L', 'R' e 'M'.")
-        )
+        instance.move_probe = AsyncMock(side_effect=InvalidCommandException())
         response = await async_client.post(
-                "/api/v1/move-probe", json={"id": 1, "command": "XYZ"}
-            )
+            "/api/v1/move-probe", json={"id": 1, "command": "XYZ"}
+        )
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Comando inválido. Use apenas 'L', 'R' e 'M'."
@@ -136,7 +137,6 @@ async def test_see_probe_positions_success(async_client):
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
 
-        # Moca o retorno do serviço (ProbesPositionsResponse, que contém a lista .probes)
         mock_positions_response = ProbesPositionsResponse(
             probes=[
                 {"id": 1, "x": 1, "y": 2, "direction": "NORTH"},

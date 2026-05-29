@@ -1,5 +1,12 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.core.exceptions import (
+    GridNotFoundException,
+    GridSizeInvalidException,
+    InvalidCommandException,
+    InvalidMovementException,
+    ProbeNotFoundException,
+)
 from app.models.grid import Grid
 from app.models.probe import Probe
 from app.repositories.grid_repository import GridRepository
@@ -21,7 +28,7 @@ class ProbeService:
 
     async def launch_probe(self, probe: ProbeLaunch) -> ProbeResponse:
         if probe.x <= 0 or probe.y <= 0:
-            raise ValueError("O tamanho da malha deve ser maior que zero.")
+            raise GridSizeInvalidException()
 
         grid_dimension = Grid(dimension_x=probe.x, dimension_y=probe.y)
 
@@ -48,17 +55,17 @@ class ProbeService:
     async def move_probe(self, moveProbe: ProbeMove) -> Probe:
         probe = await self.repository.get_by_id(moveProbe.id)
         if not probe:
-            raise ValueError("Sonda não encontrada.")
+            raise ProbeNotFoundException()
 
         cmd = moveProbe.command.upper()
 
         if not all(c in "LRM" for c in cmd):
-            raise ValueError("Comando inválido. Use apenas 'L', 'R' e 'M'.")
+            raise InvalidCommandException()
 
         grid = await self.grid_repository.get_by_probe_id(moveProbe.id)
 
         if not grid:
-            raise ValueError("Malha associada à sonda não encontrada.")
+            raise GridNotFoundException()
 
         handlers = {
             "L": lambda: self._turn_left(probe),
@@ -101,7 +108,7 @@ class ProbeService:
             or new_y < 0
             or new_y > grid.dimension_y
         ):
-            raise ValueError("Movimento inválido. A sonda não pode sair da malha.")
+            raise InvalidMovementException()
 
         probe.x = new_x
         probe.y = new_y

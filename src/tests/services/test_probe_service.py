@@ -3,6 +3,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from pydantic_core import ValidationError
 import pytest
 
+from app.core.exceptions import (
+    GridNotFoundException,
+    GridSizeInvalidException,
+    InvalidCommandException,
+    InvalidMovementException,
+    ProbeNotFoundException,
+)
 from app.schemas.probe import ProbeLaunch, ProbeMove, ProbeResponse
 from app.services.probe_service import ProbeService
 
@@ -16,8 +23,6 @@ async def test_launch_probe(mock_session):
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
-
-        # O repositório irá retornar este probe mockado ao ser salvo
         mock_saved_probe = MagicMock()
         mock_saved_probe.id = 1
         mock_saved_probe.direction = "NORTH"
@@ -50,7 +55,7 @@ async def test_launch_probe_invalid_grid(mock_session):
     service = ProbeService(session=mock_session)
 
     # Act & Assert
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(GridSizeInvalidException) as exc_info:
         await service.launch_probe(launch_request)
 
     assert str(exc_info.value) == "O tamanho da malha deve ser maior que zero."
@@ -79,7 +84,7 @@ async def test_move_probe_not_found(mock_session):
         service = ProbeService(session=mock_session)
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ProbeNotFoundException) as exc_info:
             await service.move_probe(move_req)
         assert str(exc_info.value) == "Sonda não encontrada."
 
@@ -97,7 +102,7 @@ async def test_move_probe_invalid_command(mock_session):
         service = ProbeService(session=mock_session)
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(InvalidCommandException) as exc_info:
             await service.move_probe(move_req)
         assert str(exc_info.value) == "Comando inválido. Use apenas 'L', 'R' e 'M'."
 
@@ -121,7 +126,7 @@ async def test_move_probe_grid_not_found(mock_session):
         service = ProbeService(session=mock_session)
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(GridNotFoundException) as exc_info:
             await service.move_probe(move_req)
         assert str(exc_info.value) == "Malha associada à sonda não encontrada."
 
@@ -240,7 +245,7 @@ async def test_move_probe_out_of_bounds(mock_session, mock_probe):
         service = ProbeService(session=mock_session)
 
         # Act & Assert
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(InvalidMovementException) as exc_info:
             await service.move_probe(move_req)
         assert (
             str(exc_info.value) == "Movimento inválido. A sonda não pode sair da malha."
