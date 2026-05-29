@@ -23,8 +23,13 @@ class ProbeLaunch(ProbeBase):
     pass
 
 
-class ProbeResponse(ProbeBase):
+class ProbeResponse(SQLModel):
     id: int = Field(..., description="ID da sonda lançada")
+    x: int = Field(..., description="Coordenada X da sonda")
+    y: int = Field(..., description="Coordenada Y da sonda")
+    direction: DirectionEnum = Field(
+        ..., description="Direção inicial da sonda (NORTH, EAST, SOUTH, WEST)"
+    )
 
 
 class ProbeMove(SQLModel):

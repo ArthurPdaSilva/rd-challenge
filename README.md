@@ -7,18 +7,24 @@
 - **Python:** Linguagem da API. Versão >= 3.14
 - **uv:** Gerenciador de pacotes uv (utilizado para este projeto).
 - **PostgreSQL:** Banco de dados utilizado para persistência.
+- **Ferramenta de gerenciamento de banco de dados:** Opcional, mas recomendado para facilitar a visualização dos dados. Utilizei tanto o `pgAdmin` quanto o `DBeaver` durante o desenvolvimento.
+- **API Client:** Para testar os endpoints da API, como o `Postman`, `Insomnia` ou usar o próprio `Swagger UI`.
 - **Docker:** Caso prefira rodar a aplicação contêinerizada.
 
 ## API
 
 ### Configurando e Rodando com Docker
 
-- Certifique-se de que o Docker e o Docker Compose estejam instalados e em execução.
-- Configure as variáveis de ambiente no arquivo `.env` conforme necessário, especialmente as relacionadas ao banco de dados PostgreSQL (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`). Note que a variável `POSTGRES_SERVER` será ignorada quando rodar com Docker, pois a aplicação se conectará automaticamente ao serviço `db` definido no `docker-compose.yml`.
+- Certifique-se de que o Docker está instalado e rodando em sua máquina.
+- Configure as variáveis de ambiente:
+  - Crie um arquivo `.env` na raiz do projeto (ou copie o `.env.example`) e preencha as variáveis de ambiente necessárias para o banco de dados PostgreSQL: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`.
+  - Caso deseje usar o pgAdmin para gerenciar o banco de dados, configure as variáveis: `PGADMIN_DEFAULT_EMAIL` e `PGADMIN_DEFAULT_PASSWORD`.
 - Na raiz do projeto, execute o comando: `docker compose up --build`
 - O Docker irá construir as imagens necessárias e iniciar os contêineres para a API e o banco de dados PostgreSQL.
-- A API estará disponível em <http://localhost:8000> e o banco de dados PostgreSQL estará acessível para a aplicação.
-- Para acessar a documentação interativa da API, vá para <http://localhost:8000/docs>.
+- **URLS**:
+  - API: <http://localhost:8000>
+  - Documentação interativa da API: <http://localhost:8000/docs>
+  - PGAdmin: <http://localhost:5050> (use as credenciais do `.env` para login)
 - Para rodar os testes, use o comando:
   - Windows: `docker compose run --rm api pytest`
   - Linux/Mac: `docker compose run --rm api pytest`
@@ -30,7 +36,7 @@
 
 - Certifique-se de ter o Python e o PostgreSQL instalados e configurados corretamente em sua máquina.
 - Configure as variáveis de ambiente no arquivo `.env` conforme necessário, especialmente as relacionadas ao banco de dados PostgreSQL (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_SERVER`, `POSTGRES_DB`).
-- **Na raiz do projeto, crie um ambiente virtual e instale as dependências usando o `uv`**:
+- Na raiz do projeto, crie um ambiente virtual e instale as dependências usando o `uv`:
   - Crie o virtual env: `uv venv`
   - Ative o virtual env:
     - Windows: `uv venv activate`
@@ -57,6 +63,7 @@
 - **Configurações de ambiente:**: Optei por usar o `python-dotenv` por já ter conhecimento da solução e por achar bem elegante.
 - **Ruff:**: Adicionei o `ruff`, pois acredito que todo projeto precisa ter um reforçador de qualidade de código, e o `ruff` é uma ferramenta moderna e eficiente para isso, além de ser fácil de configurar e usar.
 - **Custom exceptions:**: Adicionei exceções customizadas para os erros de negócio, pois isso garante que a API possa retornar mensagens de erro mais claras e específicas.
+- **PGAdmin:**: Adicionei o `pgAdmin` no Docker para facilitar a visualização dos dados e o gerenciamento do banco de dados.
 
 ## Dependências principais
 
@@ -75,3 +82,9 @@
 ## Recomendações rápidas
 
 - Utilize a versão das dependências listadas em *Dependências principais* e também no arquivo `pyproject.toml` para garantir compatibilidade e evitar erros.
+- Ao usar o `PGAdmin` quando for adicionar um novo servidor de banco de dados, use as seguintes configurações:
+  - Host: `db` (nome do serviço do banco de dados no Docker)
+  - Port: `5432`
+  - Maintenance database: `POSTGRES_DB`
+  - Username: `POSTGRES_USER`
+  - Password: `POSTGRES_PASSWORD`

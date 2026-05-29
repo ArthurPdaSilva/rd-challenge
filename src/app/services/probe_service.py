@@ -38,8 +38,8 @@ class ProbeService:
 
         return ProbeResponse(
             id=launched_probe.id,
-            x=grid_dimension.dimension_x,
-            y=grid_dimension.dimension_y,
+            x=launched_probe.x,
+            y=launched_probe.y,
             direction=launched_probe.direction,
         )
 
