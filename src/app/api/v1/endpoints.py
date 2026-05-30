@@ -15,10 +15,9 @@ from app.services.probe_service import ProbeService
 router = APIRouter()
 
 
-@router.get("/health-check", tags=["health"])
+@router.get("/", tags=["health"])
 async def health_check():
-    """Verificar a saúde da aplicação."""
-    return {"status": "healthy"}
+    return {"message": "API de Controle de Sondas no Planeta Marte está funcionando!"}
 
 
 @router.post(

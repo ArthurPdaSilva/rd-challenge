@@ -8,7 +8,7 @@
 - **uv:** Gerenciador de pacotes uv (utilizado para este projeto).
 - **PostgreSQL:** Banco de dados utilizado para persistência.
 - **Ferramenta de gerenciamento de banco de dados:** Opcional, mas recomendado para facilitar a visualização dos dados. Utilizei tanto o `pgAdmin` quanto o `DBeaver` durante o desenvolvimento.
-- **API Client:** Para testar os endpoints da API, como o `Postman`, `Insomnia` ou usar o próprio `Swagger UI`.
+- **API Client:** Para testar os endpoints da API, como o `Postman`, `Insomnia` ou usar o próprio `Swagger UI` (recomendado).
 - **Docker:** Caso prefira rodar a aplicação contêinerizada.
 
 ## API
@@ -25,12 +25,13 @@
   - API: <http://localhost:8000>
   - Documentação interativa da API: <http://localhost:8000/docs>
   - PGAdmin: <http://localhost:5050> (use as credenciais do `.env` para login)
-- Para rodar os testes, use o comando:
-  - Windows: `docker compose run --rm api pytest`
-  - Linux/Mac: `docker compose run --rm api pytest`
-- Para rodar os testes e também gerar o relatório de cobertura, use o comando:
-  - Windows: `docker compose run --rm -v "%cd%/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
-  - Linux/Mac: `docker compose run --rm -v "$(pwd)/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
+- **Testes**:
+  - Para rodar os testes, use o comando:
+    - Windows: `docker compose run --rm api pytest`
+    - Linux/Mac: `docker compose run --rm api pytest`
+  - Para rodar os testes e também gerar o relatório de cobertura, execute:
+    - Windows: `docker compose run --rm -v "%cd%/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
+    - Linux/Mac: `docker compose run --rm -v "$(pwd)/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
 
 ### Configuração Manual e Rodando Localmente
 
@@ -44,10 +45,23 @@
   - Atualize e instale os pacotes a partir do `pyproject.toml`:
     `uv sync`
 - Na raiz do projeto, entre em `src/` e execute `python run_server.py` para iniciar a aplicação.
-- A API ficará disponível em <http://127.0.0.1:8000>.
 - A aplicação tentará criar as tabelas no banco de dados automaticamente na inicialização (lifespan).
-- Para acessar a documentação interativa da API, vá para <http://127.0.0.1:8000/docs>.
-- Para rodar os testes, execute `pytest` na raiz do projeto. Para ver a cobertura de testes, use `pytest --cov=src --cov-report=html` e acesse o relatório em `htmlcov/index.html`.
+- **URLS**:
+  - API: <http://127.0.0.1:8000>
+  - Documentação interativa da API: <http://127.0.0.1:8000/docs>
+- **Testes**:
+  - Para rodar os testes execute `pytest` na raiz do projeto.
+  - Para rodar os testes e também gerar o relatório de cobertura, execute: `pytest --cov=src --cov-report=html` e acesse o relatório em `htmlcov/index.html`.
+
+## Recomendações rápidas
+
+- Utilize a versão das dependências listadas em *Dependências principais* e também no arquivo `pyproject.toml` para garantir compatibilidade e evitar erros.
+- Ao usar o `PGAdmin` quando for adicionar um novo servidor de banco de dados, use as seguintes configurações:
+  - Host: `db` (nome do serviço do banco de dados no Docker)
+  - Port: `5432`
+  - Maintenance database: `POSTGRES_DB`
+  - Username: `POSTGRES_USER`
+  - Password: `POSTGRES_PASSWORD`
 
 ## Decisões de implementação
 
@@ -64,6 +78,7 @@
 - **Ruff:**: Adicionei o `ruff`, pois acredito que todo projeto precisa ter um reforçador de qualidade de código, e o `ruff` é uma ferramenta moderna e eficiente para isso, além de ser fácil de configurar e usar.
 - **Custom exceptions:**: Adicionei exceções customizadas para os erros de negócio, pois isso garante que a API possa retornar mensagens de erro mais claras e específicas.
 - **PGAdmin:**: Adicionei o `pgAdmin` no Docker para facilitar a visualização dos dados e o gerenciamento do banco de dados.
+- **Separação de Schema e Model:**: Mesmo que o SQLModel permita usar o mesmo modelo para a definição da tabela e para a validação dos dados, optei por separar os `schemas` dos `models` (SQLModel) para encapsular melhor as responsabilidades e evitar acoplamento entre a estrutura do banco de dados e a estrutura dos dados que a API recebe ou retorna.
 
 ## Dependências principais
 
@@ -78,13 +93,3 @@
 - **ruff:** ferramenta de linter para manter a qualidade do código. Versão: >= 0.15.14
 - **pytest-cov:** plugin para medir a cobertura dos testes. Versão: >= 7.1.0
 - **pytest-asyncio:** plugin para rodar testes assíncronos com pytest. Versão: >= 1.4.0
-
-## Recomendações rápidas
-
-- Utilize a versão das dependências listadas em *Dependências principais* e também no arquivo `pyproject.toml` para garantir compatibilidade e evitar erros.
-- Ao usar o `PGAdmin` quando for adicionar um novo servidor de banco de dados, use as seguintes configurações:
-  - Host: `db` (nome do serviço do banco de dados no Docker)
-  - Port: `5432`
-  - Maintenance database: `POSTGRES_DB`
-  - Username: `POSTGRES_USER`
-  - Password: `POSTGRES_PASSWORD`

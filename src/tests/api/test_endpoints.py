@@ -12,9 +12,11 @@ from app.schemas.probe import ProbesPositionsResponse
 @pytest.mark.anyio
 async def test_health_check(async_client):
     """Deve retornar um status de saúde saudável."""
-    response = await async_client.get("/api/v1/health-check")
+    response = await async_client.get("/api/v1/")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    assert response.json() == {
+        "message": "API de Controle de Sondas no Planeta Marte está funcionando!"
+    }
 
 
 @pytest.mark.anyio

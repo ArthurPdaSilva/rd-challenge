@@ -15,7 +15,7 @@ from app.services.probe_service import ProbeService
 
 
 @pytest.mark.asyncio
-async def test_launch_probe(mock_session):
+async def test_launch_probe(mock_session, mock_probe):
     """Deverá lançar uma sonda com sucesso e retornar seus dados iniciais."""
 
     # Arrange
@@ -23,12 +23,8 @@ async def test_launch_probe(mock_session):
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
-        mock_saved_probe = MagicMock()
-        mock_saved_probe.id = 1
-        mock_saved_probe.direction = "NORTH"
 
-        # Simula o método assíncrono save()
-        mock_repo_instance.save = AsyncMock(return_value=mock_saved_probe)
+        mock_repo_instance.save = AsyncMock(return_value=mock_probe)
 
         service = ProbeService(session=mock_session)
 
@@ -38,12 +34,10 @@ async def test_launch_probe(mock_session):
         # Assert
         MockRepo.assert_called_once_with(mock_session)
         mock_repo_instance.save.assert_awaited_once()
-
-        # Validando os campos retornados no Response
-        assert response.id == 1
-        assert response.x == 5
-        assert response.y == 5
-        assert response.direction == "NORTH"
+        assert response.id == mock_probe.id
+        assert response.x == mock_probe.x
+        assert response.y == mock_probe.y
+        assert response.direction == mock_probe.direction
 
 
 @pytest.mark.asyncio

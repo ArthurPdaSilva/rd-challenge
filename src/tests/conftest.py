@@ -37,4 +37,4 @@ def mock_grid():
 @pytest.fixture
 def mock_probe(mock_grid):
     """Fixture que retorna uma sonda em 0,0 virada NORTH na malha mock."""
-    return Probe(x=0, y=0, direction="NORTH", grid=mock_grid)
+    return Probe(id=1, x=0, y=0, direction="NORTH", grid=mock_grid)
