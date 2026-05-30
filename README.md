@@ -21,11 +21,11 @@
   - Caso deseje usar o pgAdmin para gerenciar o banco de dados, configure as variáveis: `PGADMIN_DEFAULT_EMAIL` e `PGADMIN_DEFAULT_PASSWORD`.
 - Na raiz do projeto, execute o comando: `docker compose up --build`
 - O Docker irá construir as imagens necessárias e iniciar os contêineres para a API e o banco de dados PostgreSQL.
-- **URLS**:
+- **URLS:**
   - API: <http://localhost:8000/api/v1>
   - Documentação interativa da API: <http://localhost:8000/docs>
   - PGAdmin: <http://localhost:5050> (use as credenciais do `.env` para login)
-- **Testes**:
+- **Testes:**
   - Para rodar os testes, use o comando:
     - Windows: `docker compose run --rm api pytest`
     - Linux/Mac: `docker compose run --rm api pytest`
@@ -101,20 +101,20 @@
 
 ## Decisões de implementação
 
-- **Estrutura do projeto:**: Foi o ponto que mais me levou tempo para decidir e que teve mais mudanças durante o desenvolvimento. Optei por uma arquitetura de camadas ao invés de DDD, pois como não teve muitas regras de negócio complexas e distintas, acredito que o encapsulamento em camadas (routers, services, repositories) foi suficiente para manter a organização e a separação de responsabilidades.
-- **FastAPI:**: Optei pela simplicidade e pela minha experiência prévia com o `FastAPI`, além de possuir bons logs e uma integração com o Swagger UI para documentação automática, o que facilita a visualização e o teste dos endpoints.
+- **Estrutura do projeto:** Foi o ponto que mais me levou tempo para decidir e que teve mais mudanças durante o desenvolvimento. Optei por uma arquitetura de camadas ao invés de DDD, pois como não teve muitas regras de negócio complexas e distintas, acredito que o encapsulamento em camadas (routers, services, repositories) foi suficiente para manter a organização e a separação de responsabilidades.
+- **FastAPI:** Optei pela simplicidade e pela minha experiência prévia com o `FastAPI`, além de possuir bons logs e uma integração com o Swagger UI para documentação automática, o que facilita a visualização e o teste dos endpoints.
 - **SQLModel:**: Escolhi `SQLModel` por ser uma camada de abstração leve em comparação com o `SQLAlchemy` puro (escolha inicial) e por integrar bem com `Pydantic`, facilitando a definição de modelos de dados e a validação. Outro ponto, é por ser mais fácil configurar funções assíncronas nele.
-- **PostgreSQL:**: Tinha iniciado com `SQLite` para o desenvolvimento, porém optei por migrar para o `PostgreSQL`, pela robustez e pela facilidade de configuração usando Docker, além de ser um banco mais adequado para produção.
-- **Testes:**:
-  -- Motivo: Usei pytest para os testes pela simplicidade de configurar igual o **FastAPI**.
-  -- AAA: Adotei a estrutura Arrange-Act-Assert para organizar os testes com poucas exceções como o `test_lifespan` e o `test_launch_probe_invalid_direction`
-- **Docker:**: Terminando de configurar a aplicação, optei por adicionar o **Docker** para garantir o profissionalismo do projeto e por já ter a ideia completa das ferramentas que eu iria utilizar, o que facilitou a configuração do `Dockerfile` e do `docker-compose.yml`.
-- **Lifespan:**: Descobri o recurso de `lifespan` do FastAPI durante o desenvolvimento e decidi utilizá-lo para criar as tabelas no banco de dados na função `init_db` automaticamente na inicialização da aplicação, garantindo que a estrutura necessária esteja sempre pronta para uso.
-- **Configurações de ambiente:**: Optei por usar o `python-dotenv` por já ter conhecimento da solução e por achar bem elegante.
-- **Ruff:**: Adicionei o `ruff`, pois acredito que todo projeto precisa ter um reforçador de qualidade de código, e o `ruff` é uma ferramenta moderna e eficiente para isso, além de ser fácil de configurar e usar.
-- **Custom exceptions:**: Adicionei exceções customizadas para os erros de negócio, pois isso garante que a API possa retornar mensagens de erro mais claras e específicas.
-- **PGAdmin:**: Adicionei o `pgAdmin` no Docker para facilitar a visualização dos dados e o gerenciamento do banco de dados.
-- **Separação de Schema e Model:**: Mesmo que o SQLModel permita usar o mesmo modelo para a definição da tabela e para a validação dos dados, optei por separar os `schemas` dos `models` (SQLModel) para encapsular melhor as responsabilidades e evitar acoplamento entre a estrutura do banco de dados e a estrutura dos dados que a API recebe ou retorna.
+- **PostgreSQL:** Tinha iniciado com `SQLite` para o desenvolvimento, porém optei por migrar para o `PostgreSQL`, pela robustez e pela facilidade de configuração usando Docker, além de ser um banco mais adequado para produção.
+- **Testes:**
+  - Motivo: Usei pytest para os testes pela simplicidade de configurar igual o **FastAPI**.
+  - AAA: Adotei a estrutura Arrange-Act-Assert para organizar os testes com poucas exceções como o `test_lifespan` e o `test_launch_probe_invalid_direction`
+- **Docker:** Terminando de configurar a aplicação, optei por adicionar o **Docker** para garantir o profissionalismo do projeto e por já ter a ideia completa das ferramentas que eu iria utilizar, o que facilitou a configuração do `Dockerfile` e do `docker-compose.yml`.
+- **Lifespan:** Descobri o recurso de `lifespan` do FastAPI durante o desenvolvimento e decidi utilizá-lo para criar as tabelas no banco de dados na função `init_db` automaticamente na inicialização da aplicação, garantindo que a estrutura necessária esteja sempre pronta para uso.
+- **Configurações de ambiente:** Optei por usar o `python-dotenv` por já ter conhecimento da solução e por achar bem elegante.
+- **Ruff:** Adicionei o `ruff`, pois acredito que todo projeto precisa ter um reforçador de qualidade de código, e o `ruff` é uma ferramenta moderna e eficiente para isso, além de ser fácil de configurar e usar.
+- **Custom exceptions:** Adicionei exceções customizadas para os erros de negócio, pois isso garante que a API possa retornar mensagens de erro mais claras e específicas.
+- **PGAdmin:** Adicionei o `pgAdmin` no Docker para facilitar a visualização dos dados e o gerenciamento do banco de dados.
+- **Separação de Schema e Model:** Mesmo que o SQLModel permita usar o mesmo modelo para a definição da tabela e para a validação dos dados, optei por separar os `schemas` dos `models` (SQLModel) para encapsular melhor as responsabilidades e evitar acoplamento entre a estrutura do banco de dados e a estrutura dos dados que a API recebe ou retorna.
 
 ## Dependências principais
 
