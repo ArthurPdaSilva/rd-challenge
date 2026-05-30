@@ -60,13 +60,13 @@
   - **Requisição**:
 
     ```json
-    {"x": int, "y": int, "direction": str}
+    {"x": "int", "y": "int", "direction": "str"}
     ```
 
   - **Resposta**:
 
     ```json
-    {"id": int, "x": int, "y": int, "direction": "str"}
+    {"id": "int", "x": "int", "y": "int", "direction": "str"}
     ```
 
 - `POST /api/v1/move-probe/{probe_id}/`: Endpoint para mover uma sonda existente
@@ -79,14 +79,14 @@
   - **Resposta**:
 
     ```json
-    {"id": int, "x": int, "y": int, "direction": "str"}
+    {"id": "int", "x": "int", "y": "int", "direction": "str"}
     ```
 
 - `GET /api/v1/probes/`: Endpoint para listar todas as sondas lançadas
   - **Resposta**:
 
     ```json
-    [{"id": int, "x": int, "y": int, "direction": "str"}, ...]
+    [{"id": "int", "x": "int", "y": "int", "direction": "str"}, "..."]
     ```
 
 ## Recomendações rápidas
