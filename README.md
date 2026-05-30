@@ -16,7 +16,7 @@
 ### Configurando e Rodando com Docker
 
 - Certifique-se de que o Docker está instalado e rodando em sua máquina.
-- Configure as variáveis de ambiente:
+- **Configure as variáveis de ambiente**:
   - Crie um arquivo `.env` na raiz do projeto (ou copie o `.env.example`) e preencha as variáveis de ambiente necessárias para o banco de dados PostgreSQL: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`.
   - Caso deseje usar o pgAdmin para gerenciar o banco de dados, configure as variáveis: `PGADMIN_DEFAULT_EMAIL` e `PGADMIN_DEFAULT_PASSWORD`.
 - Na raiz do projeto, execute o comando: `docker compose up --build`
@@ -24,7 +24,7 @@
 - **URLS:**
   - API: <http://localhost:8000/api/v1>
   - Documentação interativa da API: <http://localhost:8000/docs>
-  - PGAdmin: <http://localhost:5050> (use as credenciais do `.env` para login)
+  - PGAdmin: <http://localhost:5050> (use as credenciais do `.env` para login), instruções para configurar o servidor de banco de dados no pgAdmin estão na seção de [Recomendações rápidas](#recomendações-rápidas) abaixo.
 - **Testes:**
   - Para rodar os testes, use o comando:
     - Windows: `docker compose run --rm api pytest`
@@ -32,11 +32,12 @@
   - Para rodar os testes e também gerar o relatório de cobertura, execute:
     - Windows: `docker compose run --rm -v "%cd%/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
     - Linux/Mac: `docker compose run --rm -v "$(pwd)/htmlcov:/app/htmlcov" api pytest --cov=src --cov-report=html`.
+  - O relatório de cobertura estará disponível em `htmlcov/index.html` no seu sistema de arquivos local.
 
 ### Configuração Manual e Rodando Localmente
 
 - Certifique-se de ter o Python e o PostgreSQL instalados e configurados corretamente em sua máquina.
-- Configure as variáveis de ambiente no arquivo `.env` conforme necessário, especialmente as relacionadas ao banco de dados PostgreSQL (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_SERVER`, `POSTGRES_DB`).
+- **Configure as variáveis de ambiente**: no arquivo `.env` conforme necessário, especialmente as relacionadas ao banco de dados PostgreSQL (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_SERVER`, `POSTGRES_DB`).
 - Na raiz do projeto, crie um ambiente virtual e instale as dependências usando o `uv`:
   - Crie o virtual env: `uv venv`
   - Ative o virtual env:
@@ -91,8 +92,8 @@
 
 ## Recomendações rápidas
 
-- Utilize a versão das dependências listadas em *Dependências principais* e também no arquivo `pyproject.toml` para garantir compatibilidade e evitar erros.
-- Ao usar o `PGAdmin` quando for adicionar um novo servidor de banco de dados, use as seguintes configurações:
+- Utilize a versão das dependências listadas em [Dependências principais](#dependências-principais) e também no arquivo `pyproject.toml` para garantir compatibilidade e evitar erros.
+- Ao usar o `PGAdmin` quando for adicionar um novo servidor de banco de dados, use as seguintes configurações e variáveis de ambiente do `.env` para preencher os campos:
   - Host: `db` (nome do serviço do banco de dados no Docker)
   - Port: `5432`
   - Maintenance database: `POSTGRES_DB`
