@@ -22,7 +22,7 @@
 - Na raiz do projeto, execute o comando: `docker compose up --build`
 - O Docker irá construir as imagens necessárias e iniciar os contêineres para a API e o banco de dados PostgreSQL.
 - **URLS**:
-  - API: <http://localhost:8000>
+  - API: <http://localhost:8000/api/v1>
   - Documentação interativa da API: <http://localhost:8000/docs>
   - PGAdmin: <http://localhost:5050> (use as credenciais do `.env` para login)
 - **Testes**:
@@ -47,11 +47,47 @@
 - Na raiz do projeto, entre em `src/` e execute `python run_server.py` para iniciar a aplicação.
 - A aplicação tentará criar as tabelas no banco de dados automaticamente na inicialização (lifespan).
 - **URLS**:
-  - API: <http://127.0.0.1:8000>
+  - API: <http://127.0.0.1:8000/api/v1>
   - Documentação interativa da API: <http://127.0.0.1:8000/docs>
 - **Testes**:
   - Para rodar os testes execute `pytest` na raiz do projeto.
   - Para rodar os testes e também gerar o relatório de cobertura, execute: `pytest --cov=src --cov-report=html` e acesse o relatório em `htmlcov/index.html`.
+
+### Endpoints
+
+- `GET /api/v1/`: Endpoint de health check para verificar se a API está funcionando.
+- `POST /api/v1/launch-probe`: Endpoint para lançar uma nova sonda
+  - **Requisição**:
+
+    ```json
+    {"x": "int", "y": "int", "direction": "str"}
+    ```
+
+  - **Resposta**:
+
+    ```json
+    {"id": "int", "x": "int", "y": "int", "direction": "str"}
+    ```
+
+- `POST /api/v1/move-probe/{probe_id}/`: Endpoint para mover uma sonda existente
+  - **Requisição**:
+
+    ```json
+    {"commands": "str"}
+    ```
+
+  - **Resposta**:
+
+    ```json
+    {"id": "int", "x": "int", "y": "int", "direction": "str"}
+    ```
+
+- `GET /api/v1/probes/`: Endpoint para listar todas as sondas lançadas
+  - **Resposta**:
+
+    ```json
+    [{"id": "int", "x": "int", "y": "int", "direction": "str"}, "..."]
+    ```
 
 ## Recomendações rápidas
 

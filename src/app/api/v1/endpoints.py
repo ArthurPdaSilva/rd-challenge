@@ -43,16 +43,20 @@ async def launch_probe(
 
 
 @router.post(
-    "/move-probe", response_model=ProbeResponse, status_code=200, tags=["probe"]
+    "/move-probe/{probe_id}",
+    response_model=ProbeResponse,
+    status_code=200,
+    tags=["probe"],
 )
 async def move_probe(
+    probe_id: int,
     move_probe: ProbeMove,
     session: SessionDep,
 ):
     """Deverá mover a sonda de acordo com os comandos recebidos (M, L, R), retornando os dados atualizados da sonda."""
     probe_service = ProbeService(session)
     try:
-        moved_probe = await probe_service.move_probe(move_probe)
+        moved_probe = await probe_service.move_probe(probe_id, move_probe)
         return {
             "id": moved_probe.id,
             "x": moved_probe.x,

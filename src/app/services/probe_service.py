@@ -52,8 +52,8 @@ class ProbeService:
             ]
         )
 
-    async def move_probe(self, moveProbe: ProbeMove) -> Probe:
-        probe = await self.repository.get_by_id(moveProbe.id)
+    async def move_probe(self, probe_id: int, moveProbe: ProbeMove) -> Probe:
+        probe = await self.repository.get_by_id(probe_id)
         if not probe:
             raise ProbeNotFoundException()
 
@@ -62,7 +62,7 @@ class ProbeService:
         if not all(c in "LRM" for c in cmd):
             raise InvalidCommandException()
 
-        grid = await self.grid_repository.get_by_probe_id(moveProbe.id)
+        grid = await self.grid_repository.get_by_probe_id(probe_id)
 
         if not grid:
             raise GridNotFoundException()

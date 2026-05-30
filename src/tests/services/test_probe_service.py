@@ -69,7 +69,7 @@ async def test_launch_probe_invalid_direction(mock_session):
 async def test_move_probe_not_found(mock_session):
     """Deverá levantar ValueError se a sonda não for encontrada no banco de dados."""
     # Arrange
-    move_req = ProbeMove(id=99, command="M")
+    move_req = ProbeMove(command="M")
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
@@ -79,7 +79,7 @@ async def test_move_probe_not_found(mock_session):
 
         # Act & Assert
         with pytest.raises(ProbeNotFoundException) as exc_info:
-            await service.move_probe(move_req)
+            await service.move_probe(99, move_req)
         assert str(exc_info.value) == "Sonda não encontrada."
 
 
@@ -87,7 +87,7 @@ async def test_move_probe_not_found(mock_session):
 async def test_move_probe_invalid_command(mock_session):
     """Deverá levantar ValueError se o comando de movimento contiver caracteres inválidos."""
     # Arrange
-    move_req = ProbeMove(id=1, command="XYZ")
+    move_req = ProbeMove(command="XYZ")
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
@@ -97,7 +97,7 @@ async def test_move_probe_invalid_command(mock_session):
 
         # Act & Assert
         with pytest.raises(InvalidCommandException) as exc_info:
-            await service.move_probe(move_req)
+            await service.move_probe(1, move_req)
         assert str(exc_info.value) == "Comando inválido. Use apenas 'L', 'R' e 'M'."
 
 
@@ -105,7 +105,7 @@ async def test_move_probe_invalid_command(mock_session):
 async def test_move_probe_grid_not_found(mock_session):
     """Deverá levantar ValueError se a malha associada à sonda não for encontrada."""
     # Arrange
-    move_req = ProbeMove(id=1, command="M")
+    move_req = ProbeMove(command="M")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -121,7 +121,7 @@ async def test_move_probe_grid_not_found(mock_session):
 
         # Act & Assert
         with pytest.raises(GridNotFoundException) as exc_info:
-            await service.move_probe(move_req)
+            await service.move_probe(1, move_req)
         assert str(exc_info.value) == "Malha associada à sonda não encontrada."
 
 
@@ -129,7 +129,7 @@ async def test_move_probe_grid_not_found(mock_session):
 async def test_move_probe_success(mock_session, mock_probe):
     """Deverá mover a sonda com sucesso ao longo da malha utilizando comandos válidos."""
     # Arrange
-    move_req = ProbeMove(id=1, command="RML")
+    move_req = ProbeMove(command="RML")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -147,7 +147,7 @@ async def test_move_probe_success(mock_session, mock_probe):
         service = ProbeService(session=mock_session)
 
         # Act
-        updated_probe = await service.move_probe(move_req)
+        updated_probe = await service.move_probe(1, move_req)
 
         # Assert
         assert updated_probe.direction == "NORTH"
@@ -160,7 +160,7 @@ async def test_move_probe_success(mock_session, mock_probe):
 async def test_move_probe_mrm_success(mock_session, mock_probe):
     """Deverá mover a sonda da posição (0,0) utilizando 'MRM' e parar em (1,1) virada para EAST."""
     # Arrange
-    move_req = ProbeMove(id=1, command="MRM")
+    move_req = ProbeMove(command="MRM")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -178,7 +178,7 @@ async def test_move_probe_mrm_success(mock_session, mock_probe):
         service = ProbeService(session=mock_session)
 
         # Act
-        updated_probe = await service.move_probe(move_req)
+        updated_probe = await service.move_probe(1, move_req)
 
         # Assert
         assert updated_probe.x == 1
@@ -219,7 +219,7 @@ async def test_see_probe_positions(mock_session):
 async def test_move_probe_out_of_bounds(mock_session, mock_probe):
     """Deverá levantar ValueError se a sonda tentar se mover para fora dos limites da malha."""
     # Arrange
-    move_req = ProbeMove(id=1, command="M")
+    move_req = ProbeMove(command="M")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -240,7 +240,7 @@ async def test_move_probe_out_of_bounds(mock_session, mock_probe):
 
         # Act & Assert
         with pytest.raises(InvalidMovementException) as exc_info:
-            await service.move_probe(move_req)
+            await service.move_probe(1, move_req)
         assert (
             str(exc_info.value) == "Movimento inválido. A sonda não pode sair da malha."
         )

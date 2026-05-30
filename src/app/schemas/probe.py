@@ -33,7 +33,6 @@ class ProbeResponse(SQLModel):
 
 
 class ProbeMove(SQLModel):
-    id: int = Field(..., description="ID da sonda a ser movida")
     command: str = Field(
         ..., description="Sequência de comandos para movimentar a sonda Exp: (MRM)"
     )
