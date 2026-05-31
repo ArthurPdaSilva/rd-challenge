@@ -69,7 +69,7 @@ async def test_launch_probe_invalid_direction(mock_session):
 async def test_move_probe_not_found(mock_session):
     """Deverá levantar ProbeNotFoundException se a sonda não for encontrada no banco de dados."""
     # Arrange
-    move_req = ProbeMove(command="M")
+    move_req = ProbeMove(commands="M")
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
@@ -87,7 +87,7 @@ async def test_move_probe_not_found(mock_session):
 async def test_move_probe_invalid_command(mock_session):
     """Deverá levantar InvalidCommandException se o comando de movimento contiver caracteres inválidos."""
     # Arrange
-    move_req = ProbeMove(command="XYZ")
+    move_req = ProbeMove(commands="XYZ")
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
@@ -102,10 +102,10 @@ async def test_move_probe_invalid_command(mock_session):
 
 
 @pytest.mark.asyncio
-async def test_move_probe_empty_command(mock_session):
+async def test_move_probe_empty_commands(mock_session):
     """Deverá levantar InvalidCommandException se o comando de movimento for vazio ou contiver apenas espaços."""
     # Arrange
-    move_req = ProbeMove(command="   ")
+    move_req = ProbeMove(commands="   ")
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
@@ -123,7 +123,7 @@ async def test_move_probe_empty_command(mock_session):
 async def test_move_probe_grid_not_found(mock_session):
     """Deverá levantar GridNotFoundException se a malha associada à sonda não for encontrada."""
     # Arrange
-    move_req = ProbeMove(command="M")
+    move_req = ProbeMove(commands="M")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -147,7 +147,7 @@ async def test_move_probe_grid_not_found(mock_session):
 async def test_move_probe_success(mock_session, mock_probe):
     """Deverá mover a sonda com sucesso ao longo da malha utilizando comandos válidos."""
     # Arrange
-    move_req = ProbeMove(command="RML")
+    move_req = ProbeMove(commands="RML")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -178,7 +178,7 @@ async def test_move_probe_success(mock_session, mock_probe):
 async def test_move_probe_mrm_success(mock_session, mock_probe):
     """Deverá mover a sonda da posição (0,0) utilizando 'MRM' e parar em (1,1) virada para EAST."""
     # Arrange
-    move_req = ProbeMove(command="MRM")
+    move_req = ProbeMove(commands="MRM")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -248,7 +248,7 @@ async def test_move_probe_out_of_bounds(
 ):
     """Deverá levantar InvalidMovementException se a sonda tentar se mover para fora dos limites em qualquer direção."""
     # Arrange
-    move_req = ProbeMove(command="M")
+    move_req = ProbeMove(commands="M")
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,
@@ -277,7 +277,7 @@ async def test_move_probe_out_of_bounds(
 
 
 @pytest.mark.parametrize(
-    "command, initial_direction",
+    "commands, initial_direction",
     [
         ("LLLL", "NORTH"),  # 4x esquerda, continua NORTH
         ("RRRR", "NORTH"),  # 4x direita, continua NORTH
@@ -285,11 +285,11 @@ async def test_move_probe_out_of_bounds(
 )
 @pytest.mark.asyncio
 async def test_move_probe_full_turn(
-    mock_session, mock_probe, command, initial_direction
+    mock_session, mock_probe, commands, initial_direction
 ):
     """Deverá manter a direção inicial após dar uma volta completa para qualquer lado (4x L ou 4x R)."""
     # Arrange
-    move_req = ProbeMove(command=command)
+    move_req = ProbeMove(commands=commands)
 
     with (
         patch("app.services.probe_service.ProbeRepository") as MockRepo,

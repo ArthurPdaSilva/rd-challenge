@@ -74,7 +74,7 @@
   - **Requisição**:
 
     ```json
-    {"command": "str"}
+    {"commands": "str"}
     ```
 
   - **Resposta**:

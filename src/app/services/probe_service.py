@@ -27,6 +27,7 @@ class ProbeService:
         self.valid_directions = {"NORTH", "EAST", "SOUTH", "WEST"}
 
     async def launch_probe(self, probe: ProbeLaunch) -> ProbeResponse:
+        """Lança uma sonda em uma malha e retorna os dados iniciais da sonda."""
         if probe.x <= 0 or probe.y <= 0:
             raise GridSizeInvalidException()
 
@@ -44,6 +45,7 @@ class ProbeService:
         )
 
     async def see_probe_positions(self) -> ProbesPositionsResponse:
+        """Retorna a posição atual de todas as sondas lançadas."""
         probes = await self.repository.get_all()
         return ProbesPositionsResponse(
             probes=[
@@ -53,11 +55,12 @@ class ProbeService:
         )
 
     async def move_probe(self, probe_id: int, moveProbe: ProbeMove) -> Probe:
+        """Aplica comandos de movimento (M, L, R) em uma sonda existente."""
         probe = await self.repository.get_by_id(probe_id)
         if not probe:
             raise ProbeNotFoundException()
 
-        cmd = moveProbe.command.upper()
+        cmd = moveProbe.commands.upper()
 
         if not all(c in "LRM" for c in cmd) or cmd.strip() == "":
             raise InvalidCommandException()

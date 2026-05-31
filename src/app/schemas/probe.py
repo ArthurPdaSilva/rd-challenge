@@ -33,7 +33,7 @@ class ProbeResponse(SQLModel):
 
 
 class ProbeMove(SQLModel):
-    command: str = Field(
+    commands: str = Field(
         ..., description="Sequência de comandos para movimentar a sonda Exp: (MRM)"
     )
 

@@ -86,7 +86,7 @@ async def test_move_probe_success(async_client, mock_probe):
         mock_probe.direction = "EAST"
         instance.move_probe = AsyncMock(return_value=mock_probe)
         move_resp = await async_client.post(
-            "/api/v1/probes/1/commands", json={"command": "RM"}
+            "/api/v1/probes/1/commands", json={"commands": "RM"}
         )
 
         assert move_resp.status_code == 200
@@ -105,7 +105,7 @@ async def test_move_probe_not_found(async_client):
         instance = MockService.return_value
         instance.move_probe = AsyncMock(side_effect=ProbeNotFoundException())
         response = await async_client.post(
-            "/api/v1/probes/9999/commands", json={"command": "M"}
+            "/api/v1/probes/9999/commands", json={"commands": "M"}
         )
 
     assert response.status_code == 404
@@ -119,7 +119,7 @@ async def test_move_probe_value_error(async_client):
         instance = MockService.return_value
         instance.move_probe = AsyncMock(side_effect=InvalidCommandException())
         response = await async_client.post(
-            "/api/v1/probes/1/commands", json={"command": "XYZ"}
+            "/api/v1/probes/1/commands", json={"commands": "XYZ"}
         )
 
     assert response.status_code == 422
