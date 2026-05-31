@@ -5,7 +5,7 @@
 ## Pré-requisitos
 
 - **Python:** Linguagem da API. Versão >= 3.14
-- **uv:** Gerenciador de pacotes uv (utilizado para este projeto).
+- **uv:** Gerenciador de pacotes uv (Recomendado se for usar a [configuração manual](#configuração-manual-e-rodando-localmente)). Instale usando `pip install uv`.
 - **PostgreSQL:** Banco de dados utilizado para persistência.
 - **Ferramenta de gerenciamento de banco de dados:** Opcional, mas recomendado para facilitar a visualização dos dados. Utilizei tanto o `pgAdmin` quanto o `DBeaver` durante o desenvolvimento.
 - **API Client:** Para testar os endpoints da API, como o `Postman`, `Insomnia` ou usar o próprio `Swagger UI` (recomendado).
