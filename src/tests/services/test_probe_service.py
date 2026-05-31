@@ -228,7 +228,6 @@ async def test_move_probe_out_of_bounds(mock_session, mock_probe):
         mock_repo_instance = MockRepo.return_value
         mock_grid_repo_instance = MockGridRepo.return_value
 
-        # Sonda na borda superior (5,5) virada para o NORTH e tentando avançar
         mock_probe.x = 5
         mock_probe.y = 5
         mock_repo_instance.get_by_id = AsyncMock(return_value=mock_probe)
