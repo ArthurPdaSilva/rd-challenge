@@ -102,6 +102,24 @@ async def test_move_probe_invalid_command(mock_session):
 
 
 @pytest.mark.asyncio
+async def test_move_probe_empty_command(mock_session):
+    """Deverá levantar InvalidCommandException se o comando de movimento for vazio ou contiver apenas espaços."""
+    # Arrange
+    move_req = ProbeMove(command="   ")
+
+    with patch("app.services.probe_service.ProbeRepository") as MockRepo:
+        mock_repo_instance = MockRepo.return_value
+        mock_repo_instance.get_by_id = AsyncMock(return_value=MagicMock())
+
+        service = ProbeService(session=mock_session)
+
+        # Act & Assert
+        with pytest.raises(InvalidCommandException) as exc_info:
+            await service.move_probe(1, move_req)
+        assert str(exc_info.value) == "Comando inválido. Use apenas 'L', 'R' e 'M'."
+
+
+@pytest.mark.asyncio
 async def test_move_probe_grid_not_found(mock_session):
     """Deverá levantar GridNotFoundException se a malha associada à sonda não for encontrada."""
     # Arrange

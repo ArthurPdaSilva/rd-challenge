@@ -59,7 +59,7 @@ class ProbeService:
 
         cmd = moveProbe.command.upper()
 
-        if not all(c in "LRM" for c in cmd):
+        if not all(c in "LRM" for c in cmd) or cmd.strip() == "":
             raise InvalidCommandException()
 
         grid = await self.grid_repository.get_by_probe_id(probe_id)
