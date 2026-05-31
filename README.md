@@ -13,7 +13,7 @@
 
 ## API
 
-### Configurando e Rodando com Docker
+### Configuração com Docker (Recomendada)
 
 - Certifique-se de que o Docker está instalado e rodando em sua máquina.
 - **Configure as variáveis de ambiente**:

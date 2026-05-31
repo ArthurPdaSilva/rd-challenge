@@ -215,9 +215,20 @@ async def test_see_probe_positions(mock_session):
         ]
 
 
+@pytest.mark.parametrize(
+    "initial_x, initial_y, direction",
+    [
+        (5, 5, "NORTH"),  # Sai pelo topo
+        (5, 5, "EAST"),  # Sai pela direita
+        (0, 0, "SOUTH"),  # Sai por baixo
+        (0, 0, "WEST"),  # Sai pela esquerda
+    ],
+)
 @pytest.mark.asyncio
-async def test_move_probe_out_of_bounds(mock_session, mock_probe):
-    """Deverá levantar InvalidMovementException se a sonda tentar se mover para fora dos limites da malha."""
+async def test_move_probe_out_of_bounds(
+    mock_session, mock_probe, initial_x, initial_y, direction
+):
+    """Deverá levantar InvalidMovementException se a sonda tentar se mover para fora dos limites em qualquer direção."""
     # Arrange
     move_req = ProbeMove(command="M")
 
@@ -228,8 +239,10 @@ async def test_move_probe_out_of_bounds(mock_session, mock_probe):
         mock_repo_instance = MockRepo.return_value
         mock_grid_repo_instance = MockGridRepo.return_value
 
-        mock_probe.x = 5
-        mock_probe.y = 5
+        # Sonda na borda correspondente virada para a direção especificada tentando avançar
+        mock_probe.x = initial_x
+        mock_probe.y = initial_y
+        mock_probe.direction = direction
         mock_repo_instance.get_by_id = AsyncMock(return_value=mock_probe)
         mock_grid_repo_instance.get_by_probe_id = AsyncMock(
             return_value=mock_probe.grid
@@ -243,3 +256,42 @@ async def test_move_probe_out_of_bounds(mock_session, mock_probe):
         assert (
             str(exc_info.value) == "Movimento inválido. A sonda não pode sair da malha."
         )
+
+
+@pytest.mark.parametrize(
+    "command, initial_direction",
+    [
+        ("LLLL", "NORTH"),  # 4x esquerda, continua NORTH
+        ("RRRR", "NORTH"),  # 4x direita, continua NORTH
+    ],
+)
+@pytest.mark.asyncio
+async def test_move_probe_full_turn(
+    mock_session, mock_probe, command, initial_direction
+):
+    """Deverá manter a direção inicial após dar uma volta completa para qualquer lado (4x L ou 4x R)."""
+    # Arrange
+    move_req = ProbeMove(command=command)
+
+    with (
+        patch("app.services.probe_service.ProbeRepository") as MockRepo,
+        patch("app.services.probe_service.GridRepository") as MockGridRepo,
+    ):
+        mock_repo_instance = MockRepo.return_value
+        mock_grid_repo_instance = MockGridRepo.return_value
+
+        mock_probe.direction = initial_direction
+        mock_repo_instance.get_by_id = AsyncMock(return_value=mock_probe)
+        mock_repo_instance.update = AsyncMock(return_value=mock_probe)
+        mock_grid_repo_instance.get_by_probe_id = AsyncMock(
+            return_value=mock_probe.grid
+        )
+
+        service = ProbeService(session=mock_session)
+
+        # Act
+        updated_probe = await service.move_probe(1, move_req)
+
+        # Assert
+        assert updated_probe.direction == initial_direction
+        mock_repo_instance.update.assert_awaited_once_with(mock_probe)
