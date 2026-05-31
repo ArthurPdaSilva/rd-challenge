@@ -57,7 +57,7 @@
 ### Endpoints
 
 - `GET /api/v1/`: Endpoint de health check para verificar se a API está funcionando.
-- `POST /api/v1/launch-probe`: Endpoint para lançar uma nova sonda
+- `POST /api/v1/probes`: Endpoint para lançar uma nova sonda
   - **Requisição**:
 
     ```json
@@ -70,11 +70,11 @@
     {"id": "int", "x": "int", "y": "int", "direction": "str"}
     ```
 
-- `POST /api/v1/move-probe/{probe_id}/`: Endpoint para mover uma sonda existente
+- `POST /api/v1/probes/{probe_id}/commands`: Endpoint para mover uma sonda existente
   - **Requisição**:
 
     ```json
-    {"commands": "str"}
+    {"command": "str"}
     ```
 
   - **Resposta**:
@@ -83,11 +83,11 @@
     {"id": "int", "x": "int", "y": "int", "direction": "str"}
     ```
 
-- `GET /api/v1/probes/`: Endpoint para listar todas as sondas lançadas
+- `GET /api/v1/probes`: Endpoint para listar todas as sondas lançadas
   - **Resposta**:
 
     ```json
-    [{"id": "int", "x": "int", "y": "int", "direction": "str"}, "..."]
+    {"probes": [{"id": "int", "x": "int", "y": "int", "direction": "str"}, "..."]}
     ```
 
 ## Recomendações rápidas

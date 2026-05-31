@@ -27,7 +27,7 @@ async def test_launch_probe_success(async_client, mock_probe):
 
         instance.launch_probe = AsyncMock(return_value=mock_probe)
         response = await async_client.post(
-            "/api/v1/launch-probe", json={"x": 5, "y": 5, "direction": "NORTH"}
+            "/api/v1/probes", json={"x": 5, "y": 5, "direction": "NORTH"}
         )
 
     assert response.status_code == 201
@@ -43,7 +43,7 @@ async def test_launch_probe_success(async_client, mock_probe):
 async def test_launch_probe_invalid_direction(async_client):
     """Deve lançar um erro se ele tentar passar uma direção inválida."""
     response = await async_client.post(
-        "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "UP"}
+        "/api/v1/probes", json={"x": 0, "y": 0, "direction": "UP"}
     )
     assert response.status_code == 422
 
@@ -52,7 +52,7 @@ async def test_launch_probe_invalid_direction(async_client):
 async def test_launch_probe_invalid_coordinates_type(async_client):
     """Deverá lançar um erro se ele tentar passar strings nas coordenadas x ou y."""
     response = await async_client.post(
-        "/api/v1/launch-probe",
+        "/api/v1/probes",
         json={"x": "invalid_x", "y": "invalid_y", "direction": "NORTH"},
     )
     assert response.status_code == 422
@@ -61,17 +61,17 @@ async def test_launch_probe_invalid_coordinates_type(async_client):
 @pytest.mark.anyio
 async def test_launch_probe_empty_payload(async_client):
     """Deverá lançar um erro se ele não passar nada no corpo da requisição."""
-    response = await async_client.post("/api/v1/launch-probe", json={})
+    response = await async_client.post("/api/v1/probes", json={})
     assert response.status_code == 422
 
 
 @pytest.mark.anyio
 async def test_launch_probe_value_error(async_client):
-    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelas exceções de negócio."""
+    """Deverá retornar erro 422 se a grid for inválida (ex: x=0, y=0) tratada pelas exceções de negócio."""
     response = await async_client.post(
-        "/api/v1/launch-probe", json={"x": 0, "y": 0, "direction": "NORTH"}
+        "/api/v1/probes", json={"x": 0, "y": 0, "direction": "NORTH"}
     )
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert response.json()["detail"] == "O tamanho da malha deve ser maior que zero."
 
 
@@ -86,7 +86,7 @@ async def test_move_probe_success(async_client, mock_probe):
         mock_probe.direction = "EAST"
         instance.move_probe = AsyncMock(return_value=mock_probe)
         move_resp = await async_client.post(
-            "/api/v1/move-probe/1", json={"command": "RM"}
+            "/api/v1/probes/1/commands", json={"command": "RM"}
         )
 
         assert move_resp.status_code == 200
@@ -100,29 +100,29 @@ async def test_move_probe_success(async_client, mock_probe):
 
 @pytest.mark.anyio
 async def test_move_probe_not_found(async_client):
-    """Deverá retornar erro 400 se a sonda não existir."""
+    """Deverá retornar erro 404 se a sonda não existir."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
         instance.move_probe = AsyncMock(side_effect=ProbeNotFoundException())
         response = await async_client.post(
-            "/api/v1/move-probe/9999", json={"command": "M"}
+            "/api/v1/probes/9999/commands", json={"command": "M"}
         )
 
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.json()["detail"] == "Sonda não encontrada."
 
 
 @pytest.mark.anyio
 async def test_move_probe_value_error(async_client):
-    """Deverá retornar erro 400 se o comando for inválido."""
+    """Deverá retornar erro 422 se o comando for inválido."""
     with patch("app.api.v1.endpoints.ProbeService") as MockService:
         instance = MockService.return_value
         instance.move_probe = AsyncMock(side_effect=InvalidCommandException())
         response = await async_client.post(
-            "/api/v1/move-probe/1", json={"command": "XYZ"}
+            "/api/v1/probes/1/commands", json={"command": "XYZ"}
         )
 
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert response.json()["detail"] == "Comando inválido. Use apenas 'L', 'R' e 'M'."
 
 

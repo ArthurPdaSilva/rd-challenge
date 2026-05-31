@@ -80,18 +80,22 @@ class ProbeService:
         return updated_probe
 
     def _turn_left(self, probe: Probe) -> None:
+        """Gira a sonda em sentido anti-horário."""
         directions = ["NORTH", "WEST", "SOUTH", "EAST"]
         probe.direction = self.get_next_direction(probe.direction, directions)
 
     def _turn_right(self, probe: Probe) -> None:
+        """Gira a sonda em sentido horário."""
         directions = ["NORTH", "EAST", "SOUTH", "WEST"]
         probe.direction = self.get_next_direction(probe.direction, directions)
 
     def get_next_direction(self, direction: DirectionEnum, directions: list) -> str:
+        """Retorna a próxima direção com base na direção atual e na lista de direções passadas."""
         current_index = directions.index(direction)
         return directions[(current_index + 1) % 4]
 
     def _move_forward(self, probe: Probe, grid: Grid):
+        """Move a sonda para frente com base na direção atual, verificando os limites da malha."""
         MOVES = {
             "NORTH": (0, 1),
             "EAST": (1, 0),

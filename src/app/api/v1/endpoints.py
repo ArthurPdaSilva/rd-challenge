@@ -1,9 +1,14 @@
-# Lançar sonda e Configurar malha
-
 from fastapi import APIRouter, HTTPException
 
 from app.api.deps import SessionDep
-from app.core.exceptions import BusinessException
+from app.core.exceptions import (
+    BusinessException,
+    GridNotFoundException,
+    GridSizeInvalidException,
+    InvalidCommandException,
+    InvalidMovementException,
+    ProbeNotFoundException,
+)
 from app.schemas.probe import (
     ProbeLaunch,
     ProbeMove,
@@ -20,14 +25,25 @@ async def health_check():
     return {"message": "API de Controle de Sondas no Planeta Marte está funcionando!"}
 
 
-@router.post(
-    "/launch-probe", response_model=ProbeResponse, status_code=201, tags=["probe"]
-)
+def _raise_http_from_business_exception(exc: BusinessException) -> None:
+    if isinstance(exc, ProbeNotFoundException):
+        raise HTTPException(status_code=404, detail=exc.message) from exc
+    if isinstance(exc, (GridSizeInvalidException, InvalidCommandException)):
+        raise HTTPException(status_code=422, detail=exc.message) from exc
+    if isinstance(exc, GridNotFoundException):
+        raise HTTPException(status_code=404, detail=exc.message) from exc
+    if isinstance(exc, InvalidMovementException):
+        raise HTTPException(status_code=409, detail=exc.message) from exc
+
+    raise HTTPException(status_code=400, detail=exc.message) from exc
+
+
+@router.post("/probes", response_model=ProbeResponse, status_code=201, tags=["probe"])
 async def launch_probe(
     probe: ProbeLaunch,
     session: SessionDep,
 ):
-    """Deverá lançar uma sonda na malha com as dimensões e direção especificadas, retornando os dados iniciais da sonda."""
+    """Lança uma sonda em uma malha e retorna os dados iniciais da sonda."""
 
     probe_service = ProbeService(session)
     try:
@@ -39,11 +55,11 @@ async def launch_probe(
             "direction": launched_probe.direction,
         }
     except BusinessException as e:
-        raise HTTPException(status_code=400, detail=e.message) from e
+        _raise_http_from_business_exception(e)
 
 
 @router.post(
-    "/move-probe/{probe_id}",
+    "/probes/{probe_id}/commands",
     response_model=ProbeResponse,
     status_code=200,
     tags=["probe"],
@@ -53,7 +69,7 @@ async def move_probe(
     move_probe: ProbeMove,
     session: SessionDep,
 ):
-    """Deverá mover a sonda de acordo com os comandos recebidos (M, L, R), retornando os dados atualizados da sonda."""
+    """Aplica comandos de movimento (M, L, R) em uma sonda existente."""
     probe_service = ProbeService(session)
     try:
         moved_probe = await probe_service.move_probe(probe_id, move_probe)
@@ -64,12 +80,12 @@ async def move_probe(
             "direction": moved_probe.direction,
         }
     except BusinessException as e:
-        raise HTTPException(status_code=400, detail=e.message) from e
+        _raise_http_from_business_exception(e)
 
 
 @router.get("/probes", response_model=ProbesPositionsResponse, tags=["probe"])
 async def see_probe_positions(session: SessionDep):
-    """Deverá retornar a lista com as posições de todas as sondas lançadas."""
+    """Retorna a lista com as posições de todas as sondas lançadas."""
     probe_service = ProbeService(session)
     positions_response = await probe_service.see_probe_positions()
     return positions_response
