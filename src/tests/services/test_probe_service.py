@@ -42,7 +42,7 @@ async def test_launch_probe(mock_session, mock_probe):
 
 @pytest.mark.asyncio
 async def test_launch_probe_invalid_grid(mock_session):
-    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelo ValueError."""
+    """Deverá retornar erro 400 se a grid for inválida (ex: x=0, y=0) tratada pelo GridSizeInvalidException."""
 
     # Arrange
     launch_request = ProbeLaunch(x=-1, y=5, direction="NORTH")
@@ -67,7 +67,7 @@ async def test_launch_probe_invalid_direction(mock_session):
 
 @pytest.mark.asyncio
 async def test_move_probe_not_found(mock_session):
-    """Deverá levantar ValueError se a sonda não for encontrada no banco de dados."""
+    """Deverá levantar ProbeNotFoundException se a sonda não for encontrada no banco de dados."""
     # Arrange
     move_req = ProbeMove(command="M")
 
@@ -85,7 +85,7 @@ async def test_move_probe_not_found(mock_session):
 
 @pytest.mark.asyncio
 async def test_move_probe_invalid_command(mock_session):
-    """Deverá levantar ValueError se o comando de movimento contiver caracteres inválidos."""
+    """Deverá levantar InvalidCommandException se o comando de movimento contiver caracteres inválidos."""
     # Arrange
     move_req = ProbeMove(command="XYZ")
 
@@ -103,7 +103,7 @@ async def test_move_probe_invalid_command(mock_session):
 
 @pytest.mark.asyncio
 async def test_move_probe_grid_not_found(mock_session):
-    """Deverá levantar ValueError se a malha associada à sonda não for encontrada."""
+    """Deverá levantar GridNotFoundException se a malha associada à sonda não for encontrada."""
     # Arrange
     move_req = ProbeMove(command="M")
 
@@ -189,7 +189,7 @@ async def test_move_probe_mrm_success(mock_session, mock_probe):
 
 @pytest.mark.asyncio
 async def test_see_probe_positions(mock_session):
-    """Deverá retornar as posições de todas as sondas lançadas."""
+    """Deverá retornar sondas lançadas e suas posições atuais."""
     # Arrange
 
     with patch("app.services.probe_service.ProbeRepository") as MockRepo:
@@ -217,7 +217,7 @@ async def test_see_probe_positions(mock_session):
 
 @pytest.mark.asyncio
 async def test_move_probe_out_of_bounds(mock_session, mock_probe):
-    """Deverá levantar ValueError se a sonda tentar se mover para fora dos limites da malha."""
+    """Deverá levantar InvalidMovementException se a sonda tentar se mover para fora dos limites da malha."""
     # Arrange
     move_req = ProbeMove(command="M")
 
