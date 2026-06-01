@@ -24,7 +24,6 @@ class ProbeService:
     def __init__(self, session: AsyncSession):
         self.repository = ProbeRepository(session)
         self.grid_repository = GridRepository(session)
-        self.valid_directions = {"NORTH", "EAST", "SOUTH", "WEST"}
 
     async def launch_probe(self, probe: ProbeLaunch) -> ProbeResponse:
         """Lança uma sonda em uma malha e retorna os dados iniciais da sonda."""
