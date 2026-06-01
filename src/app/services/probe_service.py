@@ -69,45 +69,33 @@ class ProbeService:
         if not grid:
             raise GridNotFoundException()
 
-        current_x = probe.x
-        current_y = probe.y
-        current_direction = probe.direction
-
         for c in cmd:
             if c == "L":
-                current_direction = self._turn_left(current_direction)
+                probe.direction = self._turn_left(probe)
             elif c == "R":
-                current_direction = self._turn_right(current_direction)
-            else:
-                current_x, current_y = self._move_forward(
-                    current_x, current_y, current_direction, grid
-                )
-
-        probe.x = current_x
-        probe.y = current_y
-        probe.direction = current_direction
+                probe.direction = self._turn_right(probe)
+            elif c == "M":
+                probe.x, probe.y = self._move_forward(probe, grid)
 
         updated_probe = await self.repository.update(probe)
         return updated_probe
 
-    def _turn_left(self, direction: DirectionEnum) -> str:
+    def _turn_left(self, probe: Probe) -> str:
         """Gira a sonda em sentido anti-horário."""
         directions = ["NORTH", "WEST", "SOUTH", "EAST"]
-        return self._get_next_direction(direction, directions)
+        return self._get_next_direction(probe.direction, directions)
 
-    def _turn_right(self, direction: DirectionEnum) -> str:
+    def _turn_right(self, probe: Probe) -> str:
         """Gira a sonda em sentido horário."""
         directions = ["NORTH", "EAST", "SOUTH", "WEST"]
-        return self._get_next_direction(direction, directions)
+        return self._get_next_direction(probe.direction, directions)
 
     def _get_next_direction(self, direction: DirectionEnum, directions: list) -> str:
         """Retorna a próxima direção com base na direção atual e na lista de direções passadas."""
         current_index = directions.index(direction)
         return directions[(current_index + 1) % 4]
 
-    def _move_forward(
-        self, x: int, y: int, direction: DirectionEnum, grid: Grid
-    ) -> tuple[int, int]:
+    def _move_forward(self, probe: Probe, grid: Grid):
         """Move a sonda para frente com base na direção atual, verificando os limites da malha."""
         MOVES = {
             "NORTH": (0, 1),
@@ -115,10 +103,9 @@ class ProbeService:
             "SOUTH": (0, -1),
             "WEST": (-1, 0),
         }
-
-        move_x, move_y = MOVES[direction]
-        new_x = x + move_x
-        new_y = y + move_y
+        move_x, move_y = MOVES[probe.direction]
+        new_x = probe.x + move_x
+        new_y = probe.y + move_y
 
         if (
             new_x < 0
