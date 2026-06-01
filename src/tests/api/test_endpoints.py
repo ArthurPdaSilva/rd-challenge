@@ -3,7 +3,10 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.core.exceptions import (
+    BusinessException,
+    GridNotFoundException,
     InvalidCommandException,
+    InvalidMovementException,
     ProbeNotFoundException,
 )
 from app.schemas.probe import ProbesPositionsResponse
@@ -124,6 +127,53 @@ async def test_move_probe_value_error(async_client):
 
     assert response.status_code == 422
     assert response.json()["detail"] == "Comando inválido. Use apenas 'L', 'R' e 'M'."
+
+
+@pytest.mark.anyio
+async def test_move_probe_grid_not_found(async_client):
+    """Deverá retornar erro 404 se a malha associada à sonda não existir."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+        instance.move_probe = AsyncMock(side_effect=GridNotFoundException())
+        response = await async_client.post(
+            "/api/v1/probes/1/commands", json={"commands": "M"}
+        )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Malha associada à sonda não encontrada."
+
+
+@pytest.mark.anyio
+async def test_move_probe_invalid_movement(async_client):
+    """Deverá retornar erro 409 se o movimento sair dos limites da malha."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+        instance.move_probe = AsyncMock(side_effect=InvalidMovementException())
+        response = await async_client.post(
+            "/api/v1/probes/1/commands", json={"commands": "M"}
+        )
+
+    assert response.status_code == 409
+    assert (
+        response.json()["detail"]
+        == "Movimento inválido. A sonda não pode sair da malha."
+    )
+
+
+@pytest.mark.anyio
+async def test_move_probe_unexpected_business_error(async_client):
+    """Deverá retornar erro 400 para exceções de negócio não mapeadas explicitamente."""
+    with patch("app.api.v1.endpoints.ProbeService") as MockService:
+        instance = MockService.return_value
+        instance.move_probe = AsyncMock(
+            side_effect=BusinessException("Erro de negócio inesperado.")
+        )
+        response = await async_client.post(
+            "/api/v1/probes/1/commands", json={"commands": "M"}
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Erro de negócio inesperado."
 
 
 @pytest.mark.anyio

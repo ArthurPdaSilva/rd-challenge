@@ -26,6 +26,8 @@ async def health_check():
 
 
 def _raise_http_from_business_exception(exc: BusinessException) -> None:
+    """Converte exceções de negócio em HTTPExceptions apropriadas."""
+
     if isinstance(exc, ProbeNotFoundException):
         raise HTTPException(status_code=404, detail=exc.message) from exc
     if isinstance(exc, (GridSizeInvalidException, InvalidCommandException)):

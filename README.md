@@ -110,8 +110,9 @@
   - Motivo: Usei pytest para os testes pela simplicidade de configurar igual o **FastAPI**.
   - AAA: Adotei a estrutura Arrange-Act-Assert para organizar os testes
   - Organização de pastas: Separei os testes em pastas distintas por camada (`api`, `core`, `repositories`, `services`) para manter a organização semelhante a arquitetura da aplicação e facilitar a localização dos testes relacionados. Porém, eu não discordo que se tivesse mais testes e integrações, separar por tipo de teste (unitário, integração, e2e) poderia ser uma boa ideia também.
+  - Cobertura: Cobertura de 100% e com o total de 37 testes.
 - **Docker:** Terminando de configurar a aplicação, optei por adicionar o **Docker** para garantir o profissionalismo do projeto e por já ter a ideia completa das ferramentas que eu iria utilizar, o que facilitou a configuração do `Dockerfile` e do `docker-compose.yml`.
-- **Lifespan:** Descobri o recurso de `lifespan` do FastAPI durante o desenvolvimento e decidi utilizá-lo para criar as tabelas no banco de dados na função `init_db` automaticamente na inicialização da aplicação, garantindo que a estrutura necessária esteja sempre pronta para uso.
+- **Lifespan:** Descobri o recurso de `lifespan` do FastAPI durante o desenvolvimento dessa aplicação e decidi utilizá-lo para criar as tabelas no banco de dados na função `init_db` automaticamente na inicialização da aplicação, garantindo que a estrutura necessária esteja sempre pronta para uso.
 - **Configurações de ambiente:** Optei por usar o `python-dotenv` por já ter conhecimento da solução e por achar bem elegante.
 - **Ruff:** Adicionei o `ruff`, pois acredito que todo projeto precisa ter um reforçador de qualidade de código, e o `ruff` é uma ferramenta moderna e eficiente para isso, além de ser fácil de configurar e usar.
 - **Custom exceptions:** Adicionei exceções customizadas para os erros de negócio, pois isso garante que a API possa retornar mensagens de erro mais claras e específicas.
